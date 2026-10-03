@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>La pregunta ❤️</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;600&display=swap');
+*{box-sizing:border-box}body{margin:0;min-height:100vh;overflow:hidden;background:radial-gradient(circle,#701a39,#260915 52%,#080207);color:#fff;font-family:Poppins,sans-serif}
+#bg{position:fixed;inset:0}.flash{position:fixed;inset:0;background:white;opacity:0;z-index:20;pointer-events:none}.flash.on{animation:flash .9s}
+.wrap{position:relative;z-index:3;width:100%;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:20px}.card{width:min(760px,94vw);min-height:520px;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:46px 24px;text-align:center;border:1px solid #fff2;border-radius:32px;background:#ffffff0d;backdrop-filter:blur(18px);box-shadow:0 30px 100px #0009;transition:.5s}
+.icon{font-size:4.2rem;display:block}.tag{font-size:.7rem;letter-spacing:5px;color:#efa9bd;text-transform:uppercase}h1{font:700 clamp(2.5rem,7vw,5rem)/1.05 "Playfair Display";margin:14px 0}
+.sub{color:#f1dce4;line-height:1.8;max-width:590px;margin:0 auto 28px}.actions{display:flex;justify-content:center;gap:13px;flex-wrap:wrap}
+button{font:600 1rem Poppins;border-radius:999px;padding:15px 26px;cursor:pointer;transition:.25s}#yes{border:0;background:white;color:#3c0d1d}#wait{background:#ffffff0d;color:white;border:1px solid #fff3}
+button:hover{transform:translateY(-3px)}.waitmsg{display:none;margin:20px auto 0;padding:15px;border-radius:18px;background:#ffffff0d;color:#ffd9e5}.success{display:none;font:700 2rem "Playfair Display";margin:22px 0}.final{display:none;text-decoration:none;background:white;color:#3b0d1d;border-radius:999px;padding:14px 25px;font-weight:600}
+.shake{animation:shake .5s}.heartfall{position:fixed;top:-40px;z-index:15;animation:fall 4s linear forwards}.spark{position:fixed;width:8px;height:8px;border-radius:50%;background:white;z-index:16;animation:spark 1.3s forwards}
+@keyframes flash{15%{opacity:.95}100%{opacity:0}}@keyframes shake{25%{transform:translateX(-8px)}50%{transform:translateX(8px)}75%{transform:translateX(-4px)}}@keyframes fall{to{transform:translateY(115vh) rotate(400deg);opacity:0}}@keyframes spark{to{transform:translate(var(--x),var(--y)) scale(.2);opacity:0}}
+
+@media (max-width:600px){
+.card{width:calc(100vw - 32px);min-height:calc(100dvh - 40px);padding:34px 20px;border-radius:26px}
+h1{max-width:100%}
+}
+</style>
+</head>
+<body><canvas id="bg"></canvas><div class="flash" id="flash"></div>
+<main class="wrap"><section class="card" id="card">
+<span class="icon" id="icon">💗</span><div class="tag">La pregunta</div>
+<h1 id="q">¿Quieres formar parte de mi historia? ❤️</h1>
+<p class="sub" id="sub">No tienes que decir nada complicado. Solo quiero saber qué siente tu corazón.</p>
+<div class="actions" id="actions"><button id="yes">Sí ❤️</button><button id="wait">Necesito tiempo 🤍</button></div>
+<div class="waitmsg" id="waitmsg">😂💘 ¡Ups! El botón «Necesito tiempo» no está disponible en este momento.<br>Mensaje del sistema: parece que solo queda una opción… 😏❤️</div>
+<div class="success" id="success">Entonces… que empiece nuestra historia. ✨</div>
+<a class="final" id="final" href="mensaje-final.html">Tengo algo más que decirte 💌</a>
+</section></main>
+<script>
+const bg = document.getElementById('bg');
+const ctx = bg.getContext('2d');
+function resize(){c.width=innerWidth;c.height=innerHeight}resize();addEventListener('resize',resize);let t=0;function loop(){ctx.clearRect(0,0,c.width,c.height);for(let i=0;i<65;i++){let x=(i*137+t*.15)%c.width,y=(i*79-t*.12+c.height)%c.height;ctx.fillStyle='#ffffff55';ctx.fillRect(x,y,2,2)}t++;requestAnimationFrame(loop)}loop();
+const wait = document.getElementById('wait');
+const waitmsg = document.getElementById('waitmsg');
+const yes = document.getElementById('yes');
+const actions = document.getElementById('actions');
+const icon = document.getElementById('icon');
+const q = document.getElementById('q');
+const sub = document.getElementById('sub');
+const success = document.getElementById('success');
+const final = document.getElementById('final');
+const flash = document.getElementById('flash');
+const card = document.getElementById('card');
+let waitCount=0;
+wait.onclick=()=>{wait.style.display='none';waitmsg.style.display='block';waitCount++};
+yes.onclick=()=>{actions.style.display='none';waitmsg.style.display='none';icon.textContent='💖';q.textContent='¡Sí! Entonces… empecemos. ✨';sub.textContent='Hay decisiones pequeñas que pueden convertirse en recuerdos enormes.';success.style.display='block';final.style.display='inline-block';flash.classList.add('on');card.classList.add('shake');setTimeout(()=>card.classList.remove('shake'),600);fireworks();hearts()};
+function fireworks(){for(let n=0;n<9;n++)setTimeout(()=>{let f=document.createElement('div');f.className='spark';f.style.left=(20+Math.random()*60)+'vw';f.style.top=(18+Math.random()*48)+'vh';f.style.setProperty('--x',(Math.random()*300-150)+'px');f.style.setProperty('--y',(Math.random()*300-150)+'px');document.body.appendChild(f);setTimeout(()=>f.remove(),1400)},n*130)}
+function hearts(){for(let i=0;i<55;i++)setTimeout(()=>{let h=document.createElement('div');h.className='heartfall';h.textContent=['❤️','💖','💕','💗','✨'][Math.floor(Math.random()*5)];h.style.left=Math.random()*100+'vw';h.style.fontSize=(18+Math.random()*16)+'px';h.style.animationDuration=(3+Math.random()*3)+'s';document.body.appendChild(h);setTimeout(()=>h.remove(),7000)},i*55)}
+</script></body></html>

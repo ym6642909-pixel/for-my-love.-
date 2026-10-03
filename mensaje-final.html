@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nuestra historia ✨</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;600&display=swap');
+*{box-sizing:border-box}body{margin:0;min-height:100dvh;overflow:hidden;background:#070207;color:#fff;font-family:Poppins,sans-serif;display:flex;align-items:center;justify-content:center;padding:20px}
+canvas{position:fixed;inset:0}.card{position:relative;z-index:2;width:min(760px,94vw);min-height:520px;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:55px 25px;text-align:center;border:1px solid #fff2;border-radius:34px;background:#ffffff0d;backdrop-filter:blur(18px);box-shadow:0 30px 110px #0009;animation:cinema 1.6s both}
+.tag{letter-spacing:6px;color:#efa8bd;font-size:.68rem}.icon{font-size:4.3rem;display:block;animation:pulse 1.8s infinite}
+h1{font:700 clamp(2.5rem,8vw,5rem)/1.03 "Playfair Display";margin:17px 0}p{font:1.15rem/2 "Playfair Display";color:#f5e0e7;max-width:620px;margin:15px auto}
+.line{opacity:0;animation:text 1s forwards}.line:nth-child(1){animation-delay:.7s}.line:nth-child(2){animation-delay:2s}.line:nth-child(3){animation-delay:3.3s}
+.footer{opacity:0;animation:text 1s 4.6s forwards;color:#e8a4b8;margin-top:30px;font-size:.9rem}
+@keyframes cinema{from{opacity:0;transform:scale(.88);filter:blur(10px)}to{opacity:1;transform:none;filter:none}}@keyframes text{to{opacity:1}}@keyframes pulse{50%{transform:scale(1.12)}}
+
+@media (max-width:600px){
+.card{width:calc(100vw - 32px);min-height:calc(100dvh - 40px);padding:34px 20px;border-radius:26px}
+h1{max-width:100%}
+}
+</style></head>
+<body><canvas id="c"></canvas><section class="card">
+<span class="icon">💌</span><div class="tag">EL COMIENZO</div>
+<h1>Gracias por decir que sí. ❤️</h1>
+<p><span class="line">No sé qué nos espera después de este momento…</span></p>
+<p><span class="line">pero sí sé que me gustaría descubrirlo contigo.</span></p>
+<p><span class="line">Así que guarda esta pequeña página como el primer capítulo de algo bonito. ✨</span></p>
+<div class="footer">Y ahora… comienza nuestra historia. ❤️</div>
+</section>
+<script>
+const c=document.getElementById('c'),x=c.getContext('2d');let w,h,a=[];function r(){w=c.width=innerWidth;h=c.height=innerHeight;a=Array.from({length:90},()=>({x:Math.random()*w,y:Math.random()*h,s:Math.random()*2+.3}))}function d(){x.clearRect(0,0,w,h);a.forEach(p=>{p.y-=.15;if(p.y<0)p.y=h;x.fillStyle='#ffffff77';x.beginPath();x.arc(p.x,p.y,p.s,0,7);x.fill()});requestAnimationFrame(d)}r();d();addEventListener('resize',r);
+</script></body></html>

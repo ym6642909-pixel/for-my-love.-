@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Una última pregunta ❤️</title><style>
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Arial,sans-serif;color:#fff}
+body{background:radial-gradient(circle at 50% 15%,#5b1739 0,#210b22 42%,#09030c 100%);overflow-x:hidden}
+canvas{position:fixed;inset:0;pointer-events:none;z-index:0}
+.page{position:relative;z-index:1;min-height:100vh}
+.hero,.final{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:35px 20px}
+.card,.letter{width:min(760px,94vw);padding:50px 30px;text-align:center;background:rgba(255,255,255,.075);border:1px solid rgba(255,255,255,.16);border-radius:32px;backdrop-filter:blur(16px);box-shadow:0 25px 80px rgba(0,0,0,.45);animation:appear 1s ease both}
+.letter{width:min(700px,94vw);text-align:left;line-height:2.05;font-size:18px;padding:40px 32px}
+.heart{font-size:64px;animation:pulse 1.5s infinite;filter:drop-shadow(0 0 18px #ff4f91)}
+.kicker{letter-spacing:3px;color:#ffb7cf;font-size:14px}
+h1,h2{font-family:Georgia,serif}
+h1{font-size:clamp(40px,8vw,72px);margin:10px 0 18px}
+h1 span{color:#ff6f9f}
+h2{font-size:38px;color:#ff9dbc;margin-top:0}
+.lead{font-size:20px;line-height:2;color:#f8dce7;max-width:600px;margin:auto}
+.btn{display:inline-block;margin-top:28px;padding:15px 30px;border:0;border-radius:999px;background:linear-gradient(135deg,#ff4f91,#c52c68);color:white;font-size:17px;font-weight:700;cursor:pointer;text-decoration:none;box-shadow:0 12px 30px rgba(255,65,135,.28);transition:.25s}
+.btn:hover{transform:translateY(-3px) scale(1.02)}
+.quote{margin:25px 0;padding:20px;border-left:3px solid #ff5c93;color:#ffd9e5}
+.choice{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+#yes{background:linear-gradient(135deg,#ff4f91,#ff286f)}
+#wait{background:rgba(255,255,255,.1);box-shadow:none}
+#answer{margin-top:25px;color:#ffd3e1;font-size:18px;line-height:1.8}
+footer{text-align:center;padding:25px;color:#c89bab;font-size:13px}
+.hidden{display:none!important}
+@keyframes pulse{50%{transform:scale(1.12)}}
+@keyframes appear{from{opacity:0;transform:translateY(25px)}to{opacity:1;transform:none}}
+@media(max-width:600px){.card,.letter{padding:35px 20px}.letter{font-size:17px}}
+</style></head>
+<body><canvas id="hearts"></canvas><main class="page"><section class="final"><div class="card">
+<div class="heart">💗</div>
+<h2>Y ahora... ¿me dejas acercarme un poquito más a tu corazón?</h2>
+<div class="choice">
+<button class="btn" id="yes">Sí ❤️</button>
+<button class="btn" id="wait">Necesito tiempo 🤍</button>
+</div>
+<div id="answer"></div>
+</div></section></main>
+<script>
+
+const canvas=document.getElementById('hearts');
+const ctx=canvas.getContext('2d');
+let w,h,particles=[];
+function resize(){w=canvas.width=innerWidth;h=canvas.height=innerHeight}
+addEventListener('resize',resize);resize();
+for(let i=0;i<55;i++) particles.push({x:Math.random()*w,y:Math.random()*h,s:2+Math.random()*5,v:.2+Math.random()*.7,a:.15+Math.random()*.45});
+function draw(){
+ ctx.clearRect(0,0,w,h);
+ particles.forEach(p=>{p.y-=p.v;if(p.y<-20)p.y=h+20;ctx.globalAlpha=p.a;ctx.fillStyle='#ff8fb4';ctx.beginPath();ctx.arc(p.x,p.y,p.s,0,Math.PI*2);ctx.fill()});
+ requestAnimationFrame(draw);
+}
+draw();
+
+const yes=document.getElementById('yes'), wait=document.getElementById('wait'), ans=document.getElementById('answer');
+yes.onclick=()=>{
+ ans.innerHTML='Tu sonrisa acaba de convertirse en la respuesta más bonita que podía imaginar. ❤️<br><small>Gracias por llegar hasta aquí.</small>';
+ for(let i=0;i<30;i++) particles.push({x:Math.random()*w,y:h+20,s:3+Math.random()*6,v:1+Math.random()*2,a:.7});
+};
+wait.onclick=()=>{
+ wait.classList.add('hidden');
+ ans.innerHTML='😂💘 Vaya... ese botón ha decidido tomarse unas vacaciones.<br><strong>Mensaje del sistema:</strong> «Este botón no está disponible por el momento».<br><small>Solo queda una opción... y creo que ya sabes cuál es. 😏❤️</small>';
+};
+</script></body></html>

@@ -1,94 +1,167 @@
-/**
- * Audio Manager utilizing Web Audio API for synthesized ambient sound
- * avoiding reliance on missing external audio assets.
- */
-class AudioManager {
-  constructor() {
-    this.ctx = null;
-    this.isPlaying = false;
-    this.isMuted = true;
-    this.oscillator = null;
-    this.gainNode = null;
-  }
+const AudioEngine = (() => {
 
-  init() {
-    if (this.ctx) return;
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    if (AudioContext) {
-      this.ctx = new AudioContext();
-    }
-  }
+  let ctx = null;
+  let master = null;
+  let ambientGain = null;
 
-  toggleMusic() {
-    this.init();
-    if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume();
-    }
+  let enabled = true;
 
-    this.isMuted = !this.isMuted;
-    
-    if (!this.isMuted) {
-      this.startAmbientTone();
-    } else {
-      this.stopAmbientTone();
-    }
-    
-    localStorage.setItem('dacia_box_audio', this.isMuted ? 'OFF' : 'ON');
-    return !this.isMuted;
-  }
+  function init() {
 
-  startAmbientTone() {
-    if (!this.ctx) return;
+    if (ctx) return;
+
     try {
-      this.oscillator = this.ctx.createOscillator();
-      this.gainNode = this.ctx.createGain();
 
-      // Soft warm ambient low pitch frequency (Soft synth simulation)
-      this.oscillator.type = 'sine';
-      this.oscillator.frequency.setValueAtTime(108, this.ctx.currentTime); // Deep warm note A2
+      ctx = new (
+        window.AudioContext ||
+        window.webkitAudioContext
+      )();
 
-      this.gainNode.gain.setValueAtTime(0.001, this.ctx.currentTime);
-      this.gainNode.gain.exponentialRampToValueAtTime(0.05, this.ctx.currentTime + 3);
+      master = ctx.createGain();
 
-      this.oscillator.connect(this.gainNode);
-      this.gainNode.connect(this.ctx.destination);
+      master.gain.value = enabled ? 0.035 : 0;
 
-      this.oscillator.start();
-      this.isPlaying = true;
-    } catch (e) {
-      console.warn("Audio playback non-fatal warning", e);
+      master.connect(ctx.destination);
+
+      ambientGain = ctx.createGain();
+
+      ambientGain.gain.value = 0.15;
+
+      ambientGain.connect(master);
+
+      const oscillator = ctx.createOscillator();
+
+      oscillator.type = "sine";
+      oscillator.frequency.value = 110;
+
+      const gain = ctx.createGain();
+
+      gain.gain.value = 0.012;
+
+      oscillator
+        .connect(gain)
+        .connect(ambientGain);
+
+      oscillator.start();
+
+    } catch (error) {
+      console.warn("Audio no disponible:", error);
     }
   }
 
-  stopAmbientTone() {
-    if (this.gainNode && this.ctx) {
-      this.gainNode.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 1);
+
+  function unlock() {
+
+    init();
+
+    if (
+      ctx &&
+      ctx.state === "suspended"
+    ) {
+      ctx.resume();
+    }
+  }
+
+
+  function tone(
+    frequency = 440,
+    duration = 0.12,
+    type = "sine"
+  ) {
+
+    if (!enabled) return;
+
+    init();
+
+    if (!ctx || !master) return;
+
+    const oscillator =
+      ctx.createOscillator();
+
+    const gain =
+      ctx.createGain();
+
+    oscillator.type = type;
+
+    oscillator.frequency.value =
+      frequency;
+
+    gain.gain.setValueAtTime(
+      0.0001,
+      ctx.currentTime
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+      0.09,
+      ctx.currentTime + 0.015
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+      0.0001,
+      ctx.currentTime + duration
+    );
+
+    oscillator
+      .connect(gain)
+      .connect(master);
+
+    oscillator.start();
+
+    oscillator.stop(
+      ctx.currentTime +
+      duration +
+      0.02
+    );
+  }
+
+
+  return {
+
+    unlock,
+
+    click() {
+      tone(520, 0.08);
+    },
+
+    open() {
+
+      tone(
+        220,
+        0.22,
+        "triangle"
+      );
+
       setTimeout(() => {
-        if (this.oscillator) this.oscillator.stop();
-        this.isPlaying = false;
-      }, 1000);
+        tone(330, 0.3, "sine");
+      }, 90);
+
+    },
+
+    reveal() {
+
+      tone(660, 0.18);
+
+      setTimeout(() => {
+        tone(880, 0.35);
+      }, 90);
+
+    },
+
+    setEnabled(value) {
+
+      enabled = Boolean(value);
+
+      if (master) {
+        master.gain.value =
+          enabled ? 0.035 : 0;
+      }
+
+    },
+
+    isEnabled() {
+      return enabled;
     }
-  }
 
-  playLockClick() {
-    this.init();
-    if (!this.ctx || this.isMuted) return;
-    try {
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(300, this.ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(60, this.ctx.currentTime + 0.08);
+  };
 
-      gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
-
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-      osc.start();
-      osc.stop(this.ctx.currentTime + 0.08);
-    } catch(e) {}
-  }
-}
-
-window.audioManager = new AudioManager();
+})();

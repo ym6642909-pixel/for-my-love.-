@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080e1d">
+  <meta name="description" content="A little museum of thoughts, possibilities, and feelings left unspoken.">
+  <title>The Museum of Unspoken Feelings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="ambient ambient-one" aria-hidden="true"></div><div class="ambient ambient-two" aria-hidden="true"></div>
+  <header class="topbar"><a class="wordmark" href="#" aria-label="Museum home"><span class="wordmark-mark">✳</span> A LITTLE MUSEUM <span class="wordmark-line"></span></a><button class="sound-toggle" id="soundToggle" aria-pressed="false"><span class="sound-dot"></span><span id="soundLabel">SOUND OFF</span></button></header>
+  <main>
+    <section class="scene active" id="welcome" aria-labelledby="welcomeTitle">
+      <div class="welcome-orbit"><span class="orbit orbit-a"></span><span class="orbit orbit-b"></span><span class="orbit-star star-a">✦</span><span class="orbit-star star-b">✧</span><div class="door-wrap"><div class="door-glow"></div><div class="door"><span class="door-knob"></span><span class="door-etch">✧</span></div></div></div>
+      <div class="scene-copy welcome-copy"><p class="eyebrow"><span></span> AN EXPERIENCE MADE FOR DACIA <span></span></p><h1 id="welcomeTitle">The Museum of<br><em>Unspoken Feelings</em></h1><p class="intro">Some feelings are too beautiful to remain unspoken.</p><button class="primary-btn" data-next="gallery">Enter the museum <span>↗</span></button><p class="microcopy">TAKE YOUR TIME · THERE IS NO RUSH</p></div>
+    </section>
+
+    <section class="scene" id="gallery" aria-labelledby="galleryTitle">
+      <div class="section-heading"><p class="eyebrow">EXHIBITION I · THE THINGS WE NOTICE</p><h2 id="galleryTitle">The Gallery of <em>Thoughts</em></h2><p class="section-intro">A few little things, framed not because they are perfect, but because they are worth noticing.</p></div>
+      <div class="gallery-grid">
+        <button class="thought-card" data-thought="There is a quiet kind of brightness in the way you see the world."><span class="card-number">01 / 04</span><span class="art art-sun">☼</span><span class="card-title">Your light</span><span class="card-hint">A little detail <b>↗</b></span></button>
+        <button class="thought-card" data-thought="The smallest conversations can leave the warmest memories."><span class="card-number">02 / 04</span><span class="art art-wave">〰</span><span class="card-title">Little moments</span><span class="card-hint">A little detail <b>↗</b></span></button>
+        <button class="thought-card" data-thought="Your own way of being yourself is something genuinely lovely."><span class="card-number">03 / 04</span><span class="art art-flower">✿</span><span class="card-title">Your own way</span><span class="card-hint">A little detail <b>↗</b></span></button>
+        <button class="thought-card" data-thought="Some people make the world feel a little more interesting, simply by being in it."><span class="card-number">04 / 04</span><span class="art art-star">✧</span><span class="card-title">A rare presence</span><span class="card-hint">A little detail <b>↗</b></span></button>
+      </div>
+      <div class="scene-footer"><span>01 — 05</span><button class="text-btn" data-next="garden">Continue the journey <span>→</span></button></div>
+    </section>
+
+    <section class="scene" id="garden" aria-labelledby="gardenTitle">
+      <div class="garden-art" aria-hidden="true"><div class="moon"></div><div class="garden-hill hill-back"></div><div class="garden-hill hill-front"></div><div class="fireflies"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="path"></div></div>
+      <div class="scene-copy centered-copy"><p class="eyebrow">EXHIBITION II · WHAT MIGHT BLOOM</p><h2 id="gardenTitle">The Garden of <em>Possibilities</em></h2><p class="section-intro">Every connection has its own pace. Choose a path that feels right to you.</p>
+        <div class="path-choices"><button class="path-choice" data-path="friendship"><span class="choice-icon">✿</span><span><b>A deeper friendship</b><small>Let something lovely grow naturally.</small></span><span class="choice-arrow">↗</span></button><button class="path-choice" data-path="memories"><span class="choice-icon">☾</span><span><b>More shared moments</b><small>Make room for little memories.</small></span><span class="choice-arrow">↗</span></button><button class="path-choice" data-path="unknown"><span class="choice-icon">✧</span><span><b>See where life leads</b><small>Leave a little space for surprise.</small></span><span class="choice-arrow">↗</span></button></div>
+        <p class="choice-response" id="pathResponse" aria-live="polite"></p>
+      </div><div class="scene-footer"><span>02 — 05</span><button class="text-btn" data-next="time">Continue <span>→</span></button></div>
+    </section>
+
+    <section class="scene" id="time" aria-labelledby="timeTitle">
+      <div class="hourglass-scene" aria-hidden="true"><div class="hourglass"><div class="glass-top"></div><div class="glass-bottom"></div><div class="glass-neck"></div><div class="sand sand-top"></div><div class="sand sand-bottom"></div><div class="sand-stream"></div></div><span class="time-spark spark-one">✦</span><span class="time-spark spark-two">✧</span><span class="time-spark spark-three">·</span></div>
+      <div class="scene-copy centered-copy time-copy"><p class="eyebrow">EXHIBITION III · THE GENTLE ART OF TIME</p><h2 id="timeTitle">The Room of <em>Time</em></h2><p class="section-intro">Distance, timing, and chance are all part of being human. Not every beautiful story needs to be hurried.</p><blockquote>“What matters is not how quickly a story unfolds, but how honestly it is lived.”</blockquote><button class="primary-btn" data-next="final">One last room <span>↗</span></button></div>
+      <div class="scene-footer"><span>03 — 05</span><span class="footer-note">LET THINGS UNFOLD</span></div>
+    </section>
+
+    <section class="scene" id="final" aria-labelledby="finalTitle">
+      <div class="final-sky" aria-hidden="true"><div class="final-moon"></div><div class="sea sea-back"></div><div class="sea sea-front"></div><div class="horizon-glow"></div><div class="final-stars">✦　 ·　 ✧　　 ·　　 ✦　　·　✧</div></div>
+      <div class="final-content"><p class="eyebrow">THE LAST EXHIBITION · A NOTE FOR YOU</p><div class="letter-card"><div class="letter-top"><span>FOR DACIA</span><span>✧</span></div><h2 id="finalTitle">What I wanted<br><em>you to know</em></h2><p class="letter-text">I made this little place because I wanted to tell you something in a way that felt a bit more special than an ordinary message.</p><p class="letter-text">I admire you, Dacia. I appreciate the person you are, and I’m glad our paths crossed. I don’t expect you to have all the answers, and I don’t want you to feel any pressure. I simply wanted to be honest about how I feel.</p><p class="letter-sign">— Youssef</p><div class="letter-divider"><span>✦</span></div><p class="question-label">THE QUESTION I SAVED FOR LAST</p><h3>Dacia, would you like to see where this story could go?</h3><p class="answer-note">There is no wrong answer. Just be honest with me.</p><div class="answer-buttons"><button class="answer-btn answer-yes" data-answer="yes">I'd love to <span>✧</span></button><button class="answer-btn answer-time" data-answer="time">Let's take our time <span>☾</span></button><button class="answer-btn answer-friend" data-answer="friend">I'd rather stay friends <span>♡</span></button></div><p class="answer-result" id="answerResult" aria-live="polite"></p></div><button class="restart-btn" id="restart">↶ &nbsp; Revisit the museum</button></div>
+      <div class="scene-footer"><span>04 — 05</span><span class="footer-note">THANK YOU FOR BEING HERE</span></div>
+    </section>
+  </main>
+  <div class="thought-modal" id="thoughtModal" aria-hidden="true"><div class="modal-backdrop" data-close></div><div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalText"><button class="modal-close" data-close aria-label="Close">×</button><span class="modal-symbol">✧</span><p class="eyebrow">A THOUGHT, JUST FOR YOU</p><p id="modalText" class="modal-text"></p><button class="text-btn" data-close>Back to the gallery <span>→</span></button></div></div>
+  <nav class="progress-nav" aria-label="Museum sections"><button class="progress-dot current" data-scene="welcome" aria-label="Entrance"></button><button class="progress-dot" data-scene="gallery" aria-label="Gallery"></button><button class="progress-dot" data-scene="garden" aria-label="Garden"></button><button class="progress-dot" data-scene="time" aria-label="Time"></button><button class="progress-dot" data-scene="final" aria-label="Final exhibition"></button></nav>
+  <script src="js/audio.js"></script><script src="js/main.js"></script>
+</body></html>

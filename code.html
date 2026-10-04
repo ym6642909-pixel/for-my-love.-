@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+  </style>
+</head>
+<body>
+<!-- STITCH_THREEJS_START:ANIMATION_5 class="fixed inset-0 w-full h-full bg-transparent" -->
+<div class="fixed inset-0 w-full h-full bg-transparent" style="display:block;">
+<script src="https://ajax.googleapis.com/ajax/libs/threejs/r125/three.min.js"></script>
+<div id="threejs-container-ANIMATION_5" style="width:100%;height:100%"></div>
+<script>
+(function() {
+  const container = document.getElementById('threejs-container-ANIMATION_5');
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  /**
+ * EL COFRE QUE AÚN NO ABRIMOS — Orquestador Principal
+ * Partículas estelares, cursor cinemático, interactividad de controles y arranque
+ */
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Inicializar Partículas en Canvas
+  initBackgroundCanvas();
+
+  // Inicializar Cursor Personalizado para Desktop
+  initCustomCursor();
+
+  // Inicializar Controles HUD
+  initControls();
+
+  // Iniciar Simulación de Carga
+  startLoadingExperience();
+});
+
+/* 1. Canvas de Partículas Estelares y Brillo Dorado */
+function initBackgroundCanvas() {
+  const canvas = document.getElementById('viewport-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  let width = (canvas.width = window.innerWidth);
+  let height = (canvas.height = window.innerHeight);
+
+  window.addEventListener('resize', () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  });
+
+  const particles = [];
+  const PARTICLE_COUNT = 65;
+
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    particles.push({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      radius: Math.random() * 1.5 + 0.4,
+      alpha: Math.random() * 0.7 + 0.2,
+      speedX: (Math.random() - 0.5) * 0.25,
+      speedY: -(Math.random() * 0.35 + 0.1), // Flotan suavemente hacia arriba
+      color: Math.random() > 0.35 ? '#F3DFA5' : '#D6B36A',
+      pulseSpeed: Math.random() * 0.02 + 0.008
+    });
+  }
+
+  function render() {
+    ctx.clearRect(0, 0, width, height);
+
+    particles.forEach(p => {
+      p.x += p.speedX;
+      p.y += p.speedY;
+      p.alpha += Math.sin(Date.now() * p.pulseSpeed) * 0.005;
+
+      if (p.y < -10) {
+        p.y = height + 10;
+        p.x = Math.random() * width;
+      }
+      if (p.x < -10) p.x = width + 10;
+      if (p.x > width + 10) p.x = -10;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = Math.max(0.1, Math.min(0.85, p.alpha));
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = p.color;
+      ctx.fill();
+    });
+
+    requestAnimationFrame(render);
+  }
+  render();
+}
+
+/* 2. Cursor Cinemático Elegante */
+function initCustomCursor() {
+  const dot = document.querySelector('.custom-cursor-dot');
+  const ring = document.querySelector('.custom-cursor-ring');
+  if (!dot || !ring) return;
+
+  let mouseX = -100, mouseY = -100;
+  let ringX = -100, ringY = -100;
+
+  window.addEventListener('mousemove', e => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    dot.style.transform = `translate(${mouseX}px, ${mouseY}px)`;
+  });
+
+  function loop() {
+    ringX += (mouseX - ringX) * 0.15;
+    ringY += (mouseY - ringY) * 0.15;
+    ring.style.transform = `translate(${ringX}px, ${ringY}px)`;
+    requestAnimationFrame(loop);
+  }
+  loop();
+
+  // Detectar elementos interactivos para hover suave
+  const hoverElements = 'button, .relic-slot, .chest-container, a, [role="button"]';
+  document.addEventListener('mouseover', e => {
+    if (e.target.closest(hoverElements)) {
+      document.body.classList.add('cursor-hover');
+    }
+  });
+  document.addEventListener('mouseout', e => {
+    if (e.target.closest(hoverElements)) {
+      document.body.classList.remove('cursor-hover');
+    }
+  });
+}
+
+/* 3. Controles HUD y Botones */
+function initControls() {
+  const audioBtn = document.getElementById('btn-toggle-audio');
+  if (audioBtn) {
+    audioBtn.addEventListener('click', () => {
+      const isMuted = window.romanticAudio.toggleMute();
+      audioBtn.innerHTML = isMuted ? '♪ OFF' : '♪ ON';
+      audioBtn.setAttribute('aria-label', isMuted ? 'Activar música' : 'Silenciar música');
+    });
+  }
+
+  const restartBtn = document.getElementById('btn-restart-story');
+  if (restartBtn) {
+    restartBtn.addEventListener('click', () => {
+      if (confirm('¿Deseas revivir esta historia desde el inicio?')) {
+        STORY_DATA.relicsState = { tiempo: false, distancia: false, voz: false, recuerdo: false };
+        window.sceneManager.goTo('scene-1');
+      }
+    });
+  }
+}
+
+/* 4. Pantalla de Carga Atmosférica */
+function startLoadingExperience() {
+  const loadingStatus = document.getElementById('loading-status');
+  setTimeout(() => {
+    if (loadingStatus) loadingStatus.innerText = 'Listo.';
+    setTimeout(() => {
+      window.sceneManager.goTo('scene-1');
+    }, 900);
+  }, 1400);
+}
+
+/* 5. Interacción del Cofre */
+function openChest() {
+  const chestEl = document.getElementById('main-chest-box');
+  if (chestEl) {
+    chestEl.classList.add('opened');
+    window.romanticAudio.playChestOpening();
+    setTimeout(() => {
+      window.sceneManager.goTo('scene-2');
+    }, 1800);
+  }
+}
+window.openChest = openChest;
+})();
+</script>
+</div>
+<!-- STITCH_THREEJS_END:ANIMATION_5 -->
+</body>
+</html>

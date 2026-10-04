@@ -1,58 +1,55 @@
-/**
- * Scene Navigation & State Management Controller
- */
-class SceneManager {
-  constructor() {
-    this.scenes = document.querySelectorAll('.scene');
-    this.visitedItems = new Set(JSON.parse(localStorage.getItem('dacia_visited_items') || '[]'));
+const SCENES = [
+  "intro",
+  "letter",
+  "items",
+  "relic",
+  "secret",
+  "confession",
+  "message",
+  "future",
+  "ending"
+];
+
+const RELICS = {
+
+  time: {
+    icon: "⌛",
+    eyebrow: "TIEMPO",
+    title: "Algunas esperas empezaron a importar.",
+    body:
+      "El tiempo cambió de significado cuando empecé a esperar tus mensajes. Algunos minutos comenzaron a sentirse diferentes.",
+    action: "GUARDAR",
+    nextText: "Descubierto."
+  },
+
+  distance: {
+    icon: "⌁",
+    eyebrow: "DISTANCIA",
+    title: "Hay lugares que parecen demasiado lejos.",
+    body:
+      "Pero algunas personas consiguen sentirse cerca, incluso cuando hay miles de kilómetros entre ellas.",
+    action: "VER LA DISTANCIA",
+    nextText: "Guardar este lugar."
+  },
+
+  voice: {
+    icon: "◒",
+    eyebrow: "VOZ",
+    title: "Hay voces que queremos volver a escuchar.",
+    body:
+      "Hay voces que simplemente escuchamos. Y hay voces que, sin saber por qué, queremos volver a escuchar.",
+    action: "ESCUCHAR",
+    nextText: "Guardar este momento."
+  },
+
+  memory: {
+    icon: "✦",
+    eyebrow: "RECUERDO",
+    title: "No recuerdo exactamente cuándo cambió todo.",
+    body:
+      "Solo sé que un día ya formabas parte de mis pensamientos. Y eso me pareció bonito.",
+    action: "GUARDAR",
+    nextText: "Descubierto."
   }
 
-  showScene(sceneId) {
-    this.scenes.forEach(scene => {
-      if (scene.id === sceneId) {
-        scene.classList.add('active');
-      } else {
-        scene.classList.remove('active');
-      }
-    });
-    localStorage.setItem('dacia_box_current_scene', sceneId);
-  }
-
-  markItemVisited(itemKey) {
-    this.visitedItems.add(itemKey);
-    localStorage.setItem('dacia_visited_items', JSON.stringify(Array.from(this.visitedItems)));
-    this.checkSecretoUnlock();
-  }
-
-  checkSecretoUnlock() {
-    const required = ['tiempo', 'distancia', 'voz', 'recuerdo'];
-    const unlocked = required.every(key => this.visitedItems.has(key));
-    const secretoCard = document.getElementById('card-secreto');
-    
-    if (unlocked && secretoCard) {
-      secretoCard.classList.remove('locked');
-      secretoCard.querySelector('.artifact-title').textContent = "Secreto ✨";
-    }
-    return unlocked;
-  }
-
-  typeWriter(elementId, text, speed = 50, callback = null) {
-    const el = document.getElementById(elementId);
-    if (!el) return;
-    el.textContent = '';
-    let i = 0;
-    
-    function type() {
-      if (i < text.length) {
-        el.textContent += text.charAt(i);
-        i++;
-        setTimeout(type, speed);
-      } else if (callback) {
-        callback();
-      }
-    }
-    type();
-  }
-}
-
-window.sceneManager = new SceneManager();
+};

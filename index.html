@@ -2,217 +2,630 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  >
+
+  <meta
+    name="description"
+    content="El Cofre que Aún No Abrimos — una historia interactiva para Dacia y Yousef."
+  >
+
+  <meta name="theme-color" content="#080B16">
+  <meta name="color-scheme" content="dark">
+
   <title>El Cofre que Aún No Abrimos</title>
-  <meta name="description" content="Una experiencia cinematográfica e interactiva para Dacia.">
-  
-  <!-- Google Fonts -->
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
-  
-  <link rel="stylesheet" href="css/style.css">
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-  <!-- Custom Cursor for Desktop -->
-  <div class="custom-cursor" id="cursor"></div>
-  <div class="custom-cursor-follower" id="cursor-follower"></div>
+  <a class="skip-link" href="#main-content">
+    Saltar al contenido principal
+  </a>
 
-  <!-- Background Canvas for Dust & Stars Particles -->
-  <canvas id="particles-canvas"></canvas>
+  <div id="loader" class="loader" aria-hidden="true">
+    <div class="loader-symbol">✦</div>
+    <span>Preparando algo para ti...</span>
+  </div>
 
-  <!-- Sound & Quick Controls Header -->
-  <header class="top-controls">
-    <button id="music-toggle" class="icon-btn" aria-label="Alternar Música" title="Música">
-      <span class="music-icon">♪</span>
-      <span class="music-text">OFF</span>
+  <div class="ambient" aria-hidden="true"></div>
+  <div class="stars" aria-hidden="true"></div>
+  <div id="particles" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <header class="topbar">
+
+    <button
+      id="soundBtn"
+      class="top-button"
+      type="button"
+      aria-label="Activar o desactivar sonido"
+      aria-pressed="true"
+    >
+      ♫ <span>ON</span>
     </button>
-    <button id="skip-anim-btn" class="icon-btn hidden" aria-label="Omitir Animación">
-      <span>⏩</span>
+
+    <button
+      id="restartBtn"
+      class="top-button"
+      type="button"
+      aria-label="Reiniciar la historia desde el principio"
+    >
+      ↻
     </button>
+
   </header>
 
-  <!-- Main Cinematic Container -->
-  <main id="app-container">
+  <main id="main-content" tabindex="-1">
 
-    <!-- Loader Screen -->
-    <section id="scene-loader" class="scene active">
-      <div class="loader-content">
-        <div class="gold-ring-spinner"></div>
-        <p class="loader-text" id="loader-text">Preparando algo para ti...</p>
-      </div>
-    </section>
+    <!-- INTRO -->
+    <section
+      id="scene-intro"
+      class="scene active"
+      aria-hidden="false"
+      aria-label="Introducción"
+    >
 
-    <!-- Scene 1: The Darkness & The Mysterious Chest -->
-    <section id="scene-darkness" class="scene">
-      <div class="chest-wrapper">
-        <div class="chest-light-glow"></div>
-        <!-- SVG Interactive Walnut Chest -->
-        <div class="svg-chest-container" id="chest-trigger">
-          <svg viewBox="0 0 300 240" class="chest-svg">
-            <defs>
-              <linearGradient id="woodGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#2A1810"/>
-                <stop offset="50%" stop-color="#1A0E0A"/>
-                <stop offset="100%" stop-color="#0D0705"/>
-              </linearGradient>
-              <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#F3DFA5"/>
-                <stop offset="50%" stop-color="#D6B36A"/>
-                <stop offset="100%" stop-color="#8A6D3B"/>
-              </linearGradient>
-              <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="3" result="blur" />
-                <feComposite in="SourceGraphic" in2="blur" operator="over" />
-              </filter>
-            </defs>
-            <!-- Chest Base Shadow -->
-            <ellipse cx="150" cy="220" rx="110" ry="15" fill="#000" opacity="0.6" />
-            <!-- Chest Body -->
-            <rect x="50" y="120" width="200" height="80" rx="6" fill="url(#woodGrad)" stroke="url(#goldGrad)" stroke-width="2"/>
-            <!-- Chest Lid (Animated) -->
-            <g id="chest-lid">
-              <path d="M 45 120 C 45 60, 255 60, 255 120 Z" fill="url(#woodGrad)" stroke="url(#goldGrad)" stroke-width="2"/>
-              <rect x="140" y="105" width="20" height="30" rx="2" fill="url(#goldGrad)" filter="url(#goldGlow)"/>
-            </g>
-            <!-- Gold Metal Trims -->
-            <line x1="80" y1="120" x2="80" y2="200" stroke="url(#goldGrad)" stroke-width="3"/>
-            <line x1="220" y1="120" x2="220" y2="200" stroke="url(#goldGrad)" stroke-width="3"/>
-            <circle cx="150" cy="120" r="5" fill="url(#goldGrad)"/>
-          </svg>
-        </div>
-      </div>
-      
-      <div class="scene-intro-text">
-        <p class="fade-line">Hay algo que quiero dejarte...</p>
-        <p class="fade-line delay-1">Pero no lo abras demasiado rápido.</p>
-      </div>
+      <div class="scene-inner intro-inner">
 
-      <button id="btn-open-chest" class="btn-gold">ABRIR EL COFRE</button>
-    </section>
+        <p class="eyebrow">PARA DACIA</p>
 
-    <!-- Scene 2: The Letter -->
-    <section id="scene-letter" class="scene">
-      <div class="parchment-container">
-        <div class="typing-container">
-          <p id="letter-line-1" class="typing-text"></p>
-          <p id="letter-line-2" class="typing-text mt-4"></p>
-        </div>
-        <button id="btn-to-items" class="btn-gold hidden">CONTINUAR →</button>
-      </div>
-    </section>
+        <h1 data-scene-heading>
+          El Cofre que<br>
+          Aún No Abrimos
+        </h1>
 
-    <!-- Scene 3: The 5 Artifacts Inside the Box -->
-    <section id="scene-items" class="scene">
-      <h2 class="scene-subtitle">Explora los fragmentos del cofre</h2>
-      <div class="items-grid">
-        <div class="artifact-card" data-item="tiempo">
-          <div class="artifact-icon">⏳</div>
-          <span class="artifact-title">Tiempo</span>
-        </div>
-        <div class="artifact-card" data-item="distancia">
-          <div class="artifact-icon">🌍</div>
-          <span class="artifact-title">Distancia</span>
-        </div>
-        <div class="artifact-card" data-item="voz">
-          <div class="artifact-icon">🎧</div>
-          <span class="artifact-title">Voz</span>
-        </div>
-        <div class="artifact-card" data-item="recuerdo">
-          <div class="artifact-icon">🌱</div>
-          <span class="artifact-title">Recuerdo</span>
-        </div>
-        <div class="artifact-card locked" data-item="secreto" id="card-secreto">
-          <div class="artifact-icon">🔐</div>
-          <span class="artifact-title">Secreto</span>
-        </div>
-      </div>
-    </section>
+        <p class="intro-copy">
+          Hay historias que empiezan sin avisar.
+          Esta es una de ellas.
+        </p>
 
-    <!-- Item Modal / Detail Scenes -->
-    <section id="modal-item" class="scene modal-scene">
-      <div class="modal-content-box">
-        <!-- Tiempo Content -->
-        <div id="content-tiempo" class="item-detail hidden">
-          <div class="detail-icon">⏳</div>
-          <p class="poetic-text">"El tiempo cambió de significado cuando empecé a esperar tus mensajes."</p>
-          <p class="poetic-subtext">Algunos minutos comenzaron a importar.</p>
-        </div>
+        <div class="chest-wrap">
 
-        <!-- Distancia Content -->
-        <div id="content-distancia" class="item-detail hidden">
-          <div class="map-visualization">
-            <svg viewBox="0 0 400 180" class="map-svg">
-              <!-- Simple Egypt Point -->
-              <circle cx="260" cy="80" r="4" class="map-point pulse" />
-              <text x="260" y="100" class="map-label">Egipto</text>
-              <!-- Simple Honduras Point -->
-              <circle cx="100" cy="100" r="4" class="map-point pulse" />
-              <text x="100" y="120" class="map-label">Honduras</text>
-              <!-- Connecting Pulsing Arc Line -->
-              <path d="M 100 100 Q 180 30 260 80" class="map-connection-line" />
-            </svg>
+          <div class="chest">
+
+            <div class="chest-lid">
+              <div class="chest-lid-top"></div>
+              <div class="chest-lid-band"></div>
+            </div>
+
+            <div class="chest-body">
+              <div class="chest-band"></div>
+
+              <div class="chest-lock">
+                <span>✦</span>
+              </div>
+            </div>
+
           </div>
-          <p class="poetic-text">"Hay lugares que parecen demasiado lejos..."</p>
-          <p class="poetic-subtext">Pero algunas personas consiguen sentirse cerca.</p>
+
         </div>
 
-        <!-- Voz Content -->
-        <div id="content-voz" class="item-detail hidden">
-          <div class="soundwave-container">
-            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
-            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+        <button
+          id="openChest"
+          class="primary-button"
+          type="button"
+          aria-label="Abrir el cofre y comenzar la historia"
+        >
+          ABRIR EL COFRE
+        </button>
+
+        <p class="microcopy">
+          Toca para comenzar
+        </p>
+
+      </div>
+
+    </section>
+
+
+    <!-- LETTER -->
+    <section
+      id="scene-letter"
+      class="scene"
+      aria-hidden="true"
+      aria-label="La carta"
+      inert
+    >
+
+      <div class="scene-inner letter-inner">
+
+        <p class="eyebrow">PRIMERA PÁGINA</p>
+
+        <div class="paper">
+
+          <div class="paper-decoration">✦</div>
+
+          <p
+            id="letterText"
+            class="letter-text"
+          ></p>
+
+          <div class="paper-signature">
+            — Y
           </div>
-          <p class="poetic-text">"Hay voces que simplemente escuchamos."</p>
-          <p class="poetic-subtext">Y hay voces que queremos volver a escuchar.</p>
-          <button id="btn-play-voice-demo" class="btn-gold-small">ESCUCHAR</button>
+
         </div>
 
-        <!-- Recuerdo Content -->
-        <div id="content-recuerdo" class="item-detail hidden">
-          <div class="detail-icon">🌱</div>
-          <p class="poetic-text">"No recuerdo exactamente cuándo dejaste de ser una persona desconocida."</p>
-          <p class="poetic-subtext">Solo sé que un día ya formabas parte de mis pensamientos.<br><br><em>Y eso me pareció bonito.</em></p>
-        </div>
+        <button
+          class="ghost-button"
+          type="button"
+          data-next="items"
+        >
+          CONTINUAR
+        </button>
 
-        <!-- Secreto Unlock Overlay -->
-        <div id="content-secreto" class="item-detail hidden">
-          <div class="detail-icon glowing">🔐</div>
-          <p class="poetic-text">"Hay algo que todavía no te he dicho."</p>
-          <button id="btn-reveal-confession" class="btn-gold">DESCUBRIR EL SECRETO</button>
-        </div>
-
-        <button id="btn-close-modal" class="btn-gold-outline">Guardar</button>
       </div>
+
     </section>
 
-    <!-- Scene 4: Confession Prelude -->
-    <section id="scene-confession-prelude" class="scene black-out">
-      <div class="heartbeat-pulse-glow"></div>
-      <div id="confession-step-1" class="center-text-fade">
-        <h1 class="name-title">Dacia...</h1>
+
+    <!-- RELICS -->
+    <section
+      id="scene-items"
+      class="scene"
+      aria-hidden="true"
+      aria-label="Las piezas del cofre"
+      inert
+    >
+
+      <div class="scene-inner">
+
+        <p class="eyebrow">EL COFRE</p>
+
+        <h2 data-scene-heading>
+          Hay algo que quiero que descubras.
+        </h2>
+
+        <p class="section-copy">
+          Cada pieza guarda una pequeña parte de esta historia.
+        </p>
+
+        <div
+          class="progress"
+          role="progressbar"
+          aria-label="Progreso de descubrimiento de las piezas"
+          aria-valuemin="0"
+          aria-valuemax="4"
+          aria-valuenow="0"
+          aria-valuetext="0 de 4 piezas descubiertas"
+        >
+          <div id="progressBar"></div>
+        </div>
+
+        <p id="itemsHint" class="progress-text">
+          Descubre las cuatro primeras piezas. 0 de 4.
+        </p>
+
+        <div class="relic-grid">
+
+          <button
+            class="relic"
+            type="button"
+            data-relic="time"
+            aria-label="Descubrir la pieza Tiempo"
+          >
+            <span class="relic-icon" aria-hidden="true">⌛</span>
+            <strong>TIEMPO</strong>
+            <small>descubrir</small>
+          </button>
+
+          <button
+            class="relic"
+            type="button"
+            data-relic="distance"
+            aria-label="Descubrir la pieza Distancia"
+          >
+            <span class="relic-icon" aria-hidden="true">⌁</span>
+            <strong>DISTANCIA</strong>
+            <small>descubrir</small>
+          </button>
+
+          <button
+            class="relic"
+            type="button"
+            data-relic="voice"
+            aria-label="Descubrir la pieza Voz"
+          >
+            <span class="relic-icon" aria-hidden="true">◒</span>
+            <strong>VOZ</strong>
+            <small>descubrir</small>
+          </button>
+
+          <button
+            class="relic"
+            type="button"
+            data-relic="memory"
+            aria-label="Descubrir la pieza Recuerdo"
+          >
+            <span class="relic-icon" aria-hidden="true">✦</span>
+            <strong>RECUERDO</strong>
+            <small>descubrir</small>
+          </button>
+
+          <button
+            class="relic secret-relic"
+            type="button"
+            data-relic="secret"
+            disabled
+            aria-disabled="true"
+            tabindex="-1"
+            aria-label="Abrir el secreto. Esta pieza está bloqueada"
+          >
+            <span class="relic-icon" aria-hidden="true">🔐</span>
+            <strong>SECRETO</strong>
+            <small>bloqueado</small>
+          </button>
+
+        </div>
+
       </div>
-      <div id="confession-step-2" class="center-text-fade hidden">
-        <p class="question-text">¿Quieres saber qué había realmente dentro del cofre?</p>
-        <button id="btn-yes-confession" class="btn-gold mt-6">SÍ</button>
-      </div>
+
     </section>
 
-    <!-- Scene 5: The Empty Box Reveal & The Main Letter -->
-    <section id="scene-main-letter" class="scene">
-      <div class="reveal-flash-light"></div>
-      <div class="main-letter-scroll">
-        <p class="reveal-headline">No había un regalo.</p>
-        <p class="reveal-subheadline">Porque el regalo eras tú.</p>
-        <span class="single-heart">♥</span>
 
-        <div id="long-letter-container" class="letter-body mt-8">
-          <p class="letter-line">Dacia,</p>
-          <p class="letter-line">No hice este pequeño mundo para decirte solamente que me gustas.</p>
-          <p class="letter-line">Lo hice porque, aunque exista distancia entre nosotros, hay personas que consiguen acercarse de una manera que no se puede medir en kilómetros.</p>
-          <p class="letter-line">Me gusta tu forma de ser. Tu sinceridad. Tu manera de hablar. Tu corazón. Y esa parte de ti que hace que hablar contigo se sienta diferente.</p>
-          <p class="letter-line">No sé qué nos espera mañana.</p>
+    <!-- RELIC DETAIL -->
+    <section
+      id="scene-relic"
+      class="scene"
+      aria-hidden="true"
+      aria-label="Pieza descubierta"
+      inert
+    >
+
+      <div class="scene-inner relic-inner">
+
+        <div
+          id="relicVisual"
+          class="relic-large-icon"
+          aria-hidden="true"
+        >
+          ✦
+        </div>
+
+        <p
+          id="relicEyebrow"
+          class="eyebrow"
+        ></p>
+
+        <h2
+          id="relicTitle"
+          data-scene-heading
+        ></h2>
+
+        <p
+          id="relicBody"
+          class="section-copy"
+        ></p>
+
+        <div
+          id="mapVisual"
+          class="map-visual"
+          hidden
+          aria-hidden="true"
+        >
+          <div class="map-grid"></div>
+
+          <div class="map-route">
+            <span class="map-point egypt"></span>
+            <span class="route-line"></span>
+            <span class="map-point honduras"></span>
+          </div>
+
+          <div class="map-label egypt-label">
+            EGIPTO
+          </div>
+
+          <div class="map-label honduras-label">
+            HONDURAS
+          </div>
+
+          <div class="distance-number">
+            ~11,000 km
+          </div>
+        </div>
+
+        <div
+          id="wave"
+          class="wave"
+          hidden
+          aria-hidden="true"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+
+        <button
+          id="relicAction"
+          class="primary-button"
+          type="button"
+          aria-label="Interactuar con la pieza descubierta"
+        >
+          GUARDAR
+        </button>
+
+        <button
+          id="backItems"
+          class="ghost-button"
+          type="button"
+          aria-label="Volver a las piezas del cofre"
+        >
+          VOLVER
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- SECRET -->
+    <section
+      id="scene-secret"
+      class="scene"
+      aria-hidden="true"
+      aria-label="El secreto"
+      inert
+    >
+
+      <div class="scene-inner secret-inner">
+
+        <div class="secret-key" aria-hidden="true">
+          ✦
+        </div>
+
+        <p class="eyebrow">
+          ÚLTIMA PIEZA
+        </p>
+
+        <h2 data-scene-heading>
+          Algunas cosas<br>
+          solo se entienden<br>
+          cuando llega el momento.
+        </h2>
+
+        <p class="section-copy">
+          Quizás esta sea una de ellas.
+        </p>
+
+        <button
+          id="discoverSecret"
+          class="primary-button"
+          type="button"
+          aria-label="Descubrir el secreto del cofre"
+        >
+          DESCUBRIR
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- CONFESSION -->
+    <section
+      id="scene-confession"
+      class="scene confession-scene"
+      aria-hidden="true"
+      aria-label="Una confesión"
+      inert
+    >
+
+      <div class="scene-inner confession-inner">
+
+        <p
+          id="confessionLine"
+          class="confession-line"
+        >
+          Dacia...
+        </p>
+
+        <h2
+          id="confessionFinal"
+          class="confession-final"
+          hidden
+          data-scene-heading
+        >
+          Me gustas.
+        </h2>
+
+        <button
+          class="ghost-button confession-next"
+          type="button"
+          data-next="message"
+        >
+          CONTINUAR
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- MESSAGE -->
+    <section
+      id="scene-message"
+      class="scene"
+      aria-hidden="true"
+      aria-label="Un mensaje para Dacia"
+      inert
+    >
+
+      <div class="scene-inner message-inner">
+
+        <p class="eyebrow">
+          PARA TI
+        </p>
+
+        <h2 data-scene-heading>
+          Dacia
+        </h2>
+
+        <div class="message-card">
+
+          <p>
+            No hice este pequeño mundo para decirte solamente que me gustas.
+          </p>
+
+          <p>
+            Lo hice porque, aunque exista distancia entre nosotros,
+            hay personas que consiguen acercarse de una manera que no
+            se puede medir en kilómetros.
+          </p>
+
+          <p>
+            Me gusta tu forma de ser, tu sinceridad,
+            tu manera de hablar y ese corazón que hace que hablar contigo
+            se sienta diferente.
+          </p>
+
+          <p>
+            No sé qué nos espera mañana.
+            Pero sé que me alegra haberte encontrado.
+          </p>
+
+        </div>
+
+        <button
+          class="primary-button"
+          type="button"
+          data-next="future"
+        >
+          SEGUIR
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- FUTURE -->
+    <section
+      id="scene-future"
+      class="scene future-scene"
+      aria-hidden="true"
+      aria-label="El futuro"
+      inert
+    >
+
+      <div class="sunset" aria-hidden="true">
+        <div class="sun"></div>
+      </div>
+
+      <div class="ocean" aria-hidden="true">
+        <div class="wave-line wave-one"></div>
+        <div class="wave-line wave-two"></div>
+        <div class="wave-line wave-three"></div>
+      </div>
+
+      <div class="future-content">
+
+        <p class="eyebrow">
+          QUIZÁS ALGÚN DÍA
+        </p>
+
+        <h2 data-scene-heading>
+          Este cofre ya no será una historia.
+        </h2>
+
+        <p>
+          Será un recuerdo.
+        </p>
+
+        <button
+          class="primary-button"
+          type="button"
+          id="finalBtn"
+          aria-label="Continuar hacia el final de la historia"
+        >
+          CONTINUAR
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- ENDING -->
+    <section
+      id="scene-ending"
+      class="scene ending-scene"
+      aria-hidden="true"
+      aria-label="Final"
+      inert
+    >
+
+      <div class="scene-inner ending-inner">
+
+        <div class="ending-symbol" aria-hidden="true">
+          ✦
+        </div>
+
+        <p class="eyebrow">
+          FIN... POR AHORA
+        </p>
+
+        <h2 data-scene-heading>
+          Dacia &amp; Yousef
+        </h2>
+
+        <p class="ending-copy">
+          Una historia que todavía<br>
+          no ha terminado.
+        </p>
+
+        <button
+          id="restartStory"
+          class="ghost-button"
+          type="button"
+          aria-label="Volver a vivir la historia desde el principio"
+        >
+          VOLVER A EMPEZAR
+        </button>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <div
+    id="srStatus"
+    class="sr-only"
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+  ></div>
+
+  <div
+    id="srAlert"
+    class="sr-only"
+    role="alert"
+    aria-live="assertive"
+    aria-atomic="true"
+  ></div>
+
+  <script src="scenes.js"></script>
+  <script src="audio.js"></script>
+  <script src="main.js"></script>
+
+</body>
+  </html>
           <p class="letter-line">Pero sé que me alegra haberte encontrado.</p>
         </div>
 

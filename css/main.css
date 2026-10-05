@@ -1,13 +1,11 @@
 :root {
-    --bg-dark: #080a0f;
-    --card-glass: rgba(18, 22, 33, 0.6);
-    --card-border: rgba(255, 255, 255, 0.08);
-    --accent-gold: #e2b872;
-    --accent-rose: #d9777f;
-    --text-primary: #f3f4f6;
-    --text-muted: #9ca3af;
-    --font-sans: 'Plus Jakarta Sans', sans-serif;
-    --font-arabic: 'Alexandria', sans-serif;
+    --bg-warm: #fcf8f2;
+    --text-dark: #2d2b2a;
+    --text-soft: #6e6a66;
+    --accent-warm: #d4a373;
+    --card-bg: #ffffff;
+    --font-serif: 'Cormorant Garamond', 'Amiri', serif;
+    --font-sans: 'Montserrat', sans-serif;
 }
 
 * {
@@ -17,306 +15,204 @@
 }
 
 body {
-    background-color: var(--bg-dark);
-    color: var(--text-primary);
+    background-color: var(--bg-warm);
+    color: var(--text-dark);
     font-family: var(--font-sans);
     min-height: 100vh;
-    overflow-x: hidden;
-    position: relative;
-    letter-spacing: -0.01em;
+    display: flex;
+    justify-content: center;
+    padding: 3rem 1.5rem;
 }
 
 body.rtl {
-    font-family: var(--font-arabic);
     direction: rtl;
 }
 
-/* Background Ambient Lights */
-.ambient-glow {
-    position: fixed;
-    width: 600px;
-    height: 600px;
-    border-radius: 50%;
-    filter: blur(140px);
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.25;
-}
-
-.glow-1 {
-    top: -200px;
-    left: -100px;
-    background: radial-gradient(circle, var(--accent-gold), transparent 70%);
-}
-
-.glow-2 {
-    bottom: -200px;
-    right: -100px;
-    background: radial-gradient(circle, var(--accent-rose), transparent 70%);
-}
-
-.container {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 6rem 1.5rem 3rem 1.5rem;
-    position: relative;
-    z-index: 2;
-}
-
-/* Header Navbar */
-.top-nav {
-    position: fixed;
-    top: 0;
-    left: 0;
+.main-wrapper {
+    max-width: 700px;
     width: 100%;
-    padding: 1.2rem 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    backdrop-filter: blur(20px);
-    background: rgba(8, 10, 15, 0.7);
-    border-bottom: 1px solid var(--card-border);
-    z-index: 100;
 }
 
-.nav-brand {
-    font-size: 0.85rem;
-    font-weight: 600;
-    letter-spacing: 0.15em;
-    color: var(--text-primary);
-}
-
-.connector {
-    color: var(--accent-gold);
-    margin: 0 0.3rem;
-}
-
-.lang-switch-btn {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--card-border);
-    color: var(--text-primary);
-    padding: 6px 14px;
+/* Language Switcher */
+.lang-switch {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #ffffff;
+    border: 1px solid #e6e0d8;
+    padding: 8px 16px;
     border-radius: 20px;
     cursor: pointer;
-    font-size: 0.75rem;
-    letter-spacing: 0.1em;
+    font-size: 0.8rem;
+    color: var(--text-soft);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
     transition: all 0.3s ease;
 }
 
-.lang-switch-btn:hover {
-    border-color: var(--accent-gold);
-    background: rgba(226, 184, 114, 0.1);
+body.rtl .lang-switch {
+    right: auto;
+    left: 20px;
 }
 
-/* Hero Section */
-.hero-section {
+.lang-switch:hover {
+    border-color: var(--accent-warm);
+    color: var(--text-dark);
+}
+
+/* Header */
+.header-section {
     text-align: center;
-    margin-bottom: 4rem;
-}
-
-.pill-tag {
-    display: inline-block;
-    padding: 6px 16px;
-    border-radius: 30px;
-    background: rgba(226, 184, 114, 0.08);
-    border: 1px solid rgba(226, 184, 114, 0.2);
-    color: var(--accent-gold);
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.15em;
-    margin-bottom: 1.5rem;
-}
-
-.hero-section h1 {
-    font-size: clamp(2.2rem, 5vw, 3.5rem);
-    font-weight: 300;
-    background: linear-gradient(180deg, #ffffff 0%, #a1a1aa 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 0.8rem;
-}
-
-.subtitle {
-    color: var(--text-muted);
-    font-size: 1rem;
-    font-weight: 300;
-}
-
-/* Minimal Clocks */
-.clocks-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 2rem;
-    margin-top: 3rem;
-}
-
-.clock-card {
-    background: var(--card-glass);
-    border: 1px solid var(--card-border);
-    padding: 1.8rem 2.2rem;
-    border-radius: 20px;
-    backdrop-filter: blur(16px);
-    min-width: 200px;
-    text-align: left;
-}
-
-body.rtl .clock-card {
-    text-align: right;
-}
-
-.location-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.8rem;
-}
-
-.city-name {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--text-primary);
-}
-
-.country-code {
-    font-size: 0.7rem;
-    color: var(--accent-gold);
-    letter-spacing: 0.1em;
-}
-
-.clock-card .time {
-    font-size: 2rem;
-    font-weight: 300;
-    color: var(--text-primary);
-    font-feature-settings: "tnum";
-    letter-spacing: 0.02em;
-}
-
-.time-label {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-}
-
-.clock-divider {
-    height: 40px;
-    width: 1px;
-    background: var(--card-border);
-}
-
-/* Cards Grid */
-.cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 1.5rem;
     margin-bottom: 3.5rem;
 }
 
-.glass-card {
-    background: var(--card-glass);
-    border: 1px solid var(--card-border);
-    padding: 2rem;
-    border-radius: 20px;
-    backdrop-filter: blur(16px);
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s ease;
-}
-
-.glass-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(226, 184, 114, 0.3);
-}
-
-.card-num {
+.small-tag {
     font-size: 0.75rem;
-    color: var(--accent-gold);
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    margin-bottom: 1rem;
+    letter-spacing: 0.2em;
+    color: var(--accent-warm);
+    font-weight: 500;
 }
 
-.glass-card h3 {
-    font-size: 1.1rem;
+.header-section h1 {
+    font-family: var(--font-serif);
+    font-size: 2.5rem;
     font-weight: 400;
-    color: var(--text-primary);
-    margin-bottom: 0.6rem;
+    margin: 0.5rem 0;
+    color: var(--text-dark);
 }
 
-.glass-card p {
-    color: var(--text-muted);
-    font-size: 0.88rem;
-    line-height: 1.6;
+.sub-title {
+    color: var(--text-soft);
+    font-size: 0.95rem;
     font-weight: 300;
 }
 
-/* Interactive Ticket / Revelation Section */
-.revelation-section {
+/* Clocks */
+.time-container {
     display: flex;
     justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
     margin-top: 2rem;
 }
 
-.interactive-ticket {
+.time-box {
+    text-align: center;
+}
+
+.city-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-soft);
+    margin-bottom: 0.2rem;
+}
+
+.clock-digits {
+    font-family: var(--font-serif);
+    font-size: 1.6rem;
+    color: var(--text-dark);
+}
+
+.time-separator {
+    color: var(--accent-warm);
+}
+
+/* Flip Cards */
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.2rem;
+    margin-bottom: 3.5rem;
+}
+
+.story-card {
+    background-color: transparent;
+    height: 160px;
+    perspective: 1000px;
+    cursor: pointer;
+}
+
+.card-inner {
     position: relative;
     width: 100%;
-    max-width: 600px;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
-    border: 1px solid var(--card-border);
-    border-radius: 24px;
-    padding: 2.5rem;
-    backdrop-filter: blur(20px);
-    cursor: pointer;
-    overflow: hidden;
-    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
 }
 
-.interactive-ticket:hover {
-    border-color: rgba(226, 184, 114, 0.4);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+.story-card.flipped .card-inner {
+    transform: rotateY(180deg);
 }
 
-.ticket-header {
+.card-front, .card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 16px;
+    padding: 1.5rem;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    justify-content: center;
     align-items: center;
-    border-bottom: 1px solid var(--card-border);
-    padding-bottom: 1.2rem;
+    background: var(--card-bg);
+    border: 1px solid #f0eae1;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+}
+
+.card-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.card-front h3 {
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    font-weight: 400;
+}
+
+.tap-hint {
+    font-size: 0.7rem;
+    color: var(--accent-warm);
+    margin-top: 0.8rem;
+}
+
+.card-back {
+    transform: rotateY(180deg);
+    background: #faf6f0;
+}
+
+.card-back p {
+    font-size: 0.85rem;
+    color: var(--text-dark);
+    line-height: 1.5;
+}
+
+/* Note Section */
+.note-section {
+    display: flex;
+    justify-content: center;
+}
+
+.note-paper {
+    background: #ffffff;
+    border: 1px solid #eee8df;
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.03);
+    text-align: center;
+    max-width: 550px;
+}
+
+.note-paper p {
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    line-height: 1.8;
+    color: var(--text-dark);
     margin-bottom: 1.5rem;
 }
 
-.ticket-title {
-    font-size: 0.75rem;
-    letter-spacing: 0.15em;
-    color: var(--accent-gold);
-}
-
-.ticket-status {
-    font-size: 0.7rem;
-    letter-spacing: 0.1em;
-    color: var(--text-muted);
-    transition: color 0.3s ease;
-}
-
-.interactive-ticket:hover .ticket-status {
-    color: var(--text-primary);
-}
-
-.letter-text {
-    font-size: 1rem;
-    line-height: 1.8;
-    color: var(--text-primary);
-    font-weight: 300;
-    opacity: 0.4;
-    filter: blur(4px);
-    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    user-select: none;
-}
-
-.interactive-ticket.revealed .letter-text {
-    opacity: 1;
-    filter: blur(0);
-    user-select: auto;
-}
-
-.interactive-ticket.revealed {
-    border-color: var(--accent-gold);
-    background: rgba(226, 184, 114, 0.04);
+.note-signature {
+    font-size: 0.85rem;
+    color: var(--accent-warm);
 }

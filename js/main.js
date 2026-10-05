@@ -1,29 +1,12 @@
-/* =========================================================
-   ENTRE DOS MUNDOS
-   3D EARTH EXPERIENCE
-   main.js
-   ========================================================= */
-
-
-/* =========================================================
-   WAIT FOR PAGE
-   ========================================================= */
-
 document.addEventListener("DOMContentLoaded", () => {
-
 
     /* =====================================================
        ELEMENTS
        ===================================================== */
 
-    const introScene =
-        document.getElementById("intro");
-
-    const earthScene =
-        document.getElementById("earthScene");
-
-    const finalScene =
-        document.getElementById("finalScene");
+    const introScene = document.getElementById("intro");
+    const earthScene = document.getElementById("earthScene");
+    const finalScene = document.getElementById("finalScene");
 
     const earthContainer =
         document.getElementById("earth-container");
@@ -45,35 +28,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =====================================================
-       CHECK THREE.JS
+       BASIC SCENE SYSTEM
        ===================================================== */
 
-    if (typeof THREE === "undefined") {
+    function showScene(sceneElement) {
 
-        console.error(
-            "Three.js could not be loaded."
-        );
-
-        if (earthLoading) {
-
-            earthLoading.innerHTML = `
-                <span>
-                    No se pudo cargar la experiencia 3D.
-                </span>
-            `;
+        if (!sceneElement) {
+            console.error("Scene not found.");
+            return;
         }
 
-        return;
+        document.querySelectorAll(".scene").forEach(scene => {
+            scene.classList.remove("active");
+        });
+
+        sceneElement.classList.add("active");
     }
 
 
     /* =====================================================
-       LOCATIONS
+       COUNTRIES
        ===================================================== */
-
-    /*
-     * Representative coordinates for the two countries.
-     */
 
     const egypt = {
         name: "Egipto",
@@ -81,130 +56,11 @@ document.addEventListener("DOMContentLoaded", () => {
         lng: 30.8025
     };
 
-
     const honduras = {
         name: "Honduras",
         lat: 14.0723,
         lng: -86.2419
     };
-
-
-    /* =====================================================
-       EARTH SETTINGS
-       ===================================================== */
-
-    const EARTH_RADIUS = 5;
-
-    const CAMERA_START_DISTANCE = 15;
-
-    const CAMERA_MIN_DISTANCE = 5.8;
-
-    const CAMERA_MAX_DISTANCE = 18;
-
-
-    /* =====================================================
-       THREE.JS VARIABLES
-       ===================================================== */
-
-    let scene = null;
-
-    let camera = null;
-
-    let renderer = null;
-
-    let earth = null;
-
-    let earthGroup = null;
-
-    let atmosphere = null;
-
-    let stars = null;
-
-    let egyptMarker = null;
-
-    let hondurasMarker = null;
-
-    let routeLine = null;
-
-    let routeGlow = null;
-
-    let travelPoint = null;
-
-    let animationFrame = null;
-
-
-    /* =====================================================
-       STATE
-       ===================================================== */
-
-    let journeyStarted = false;
-
-    let journeyFinished = false;
-
-    let earthReady = false;
-
-    let cameraAnimation = null;
-
-
-    /* =====================================================
-       INTERACTION STATE
-       ===================================================== */
-
-    let isDragging = false;
-
-    let previousPointerX = 0;
-
-    let previousPointerY = 0;
-
-    let rotationVelocityX = 0;
-
-    let rotationVelocityY = 0;
-
-    let targetRotationX = 0;
-
-    let targetRotationY = 0;
-
-    let currentZoom =
-        CAMERA_START_DISTANCE;
-
-
-    /* =====================================================
-       COLOR HELPERS
-       ===================================================== */
-
-    const COLORS = {
-
-        white: 0xffffff,
-
-        blue: 0x6da9ff,
-
-        softBlue: 0x4d8cff,
-
-        atmosphere: 0x5ca9ff,
-
-        route: 0xffffff
-
-    };
-
-
-    /* =====================================================
-       SCENE CONTROL
-       ===================================================== */
-
-    function showScene(sceneElement) {
-
-        if (!sceneElement) return;
-
-        document
-            .querySelectorAll(".scene")
-            .forEach((element) => {
-
-                element.classList.remove("active");
-
-            });
-
-        sceneElement.classList.add("active");
-    }
 
 
     /* =====================================================
@@ -221,15 +77,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const radius = 6371;
 
         const toRadians =
-            (value) =>
-                value * Math.PI / 180;
+            value => value * Math.PI / 180;
 
-
-        const phi1 =
-            toRadians(lat1);
-
-        const phi2 =
-            toRadians(lat2);
+        const phi1 = toRadians(lat1);
+        const phi2 = toRadians(lat2);
 
         const deltaPhi =
             toRadians(lat2 - lat1);
@@ -237,13 +88,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const deltaLambda =
             toRadians(lon2 - lon1);
 
-
         const a =
             Math.sin(deltaPhi / 2) ** 2 +
             Math.cos(phi1) *
             Math.cos(phi2) *
             Math.sin(deltaLambda / 2) ** 2;
-
 
         const c =
             2 *
@@ -251,7 +100,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 Math.sqrt(a),
                 Math.sqrt(1 - a)
             );
-
 
         return radius * c;
     }
@@ -276,8 +124,112 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =====================================================
-       LAT / LNG → 3D
+       THREE.JS VARIABLES
        ===================================================== */
+
+    let THREE = null;
+
+    let scene = null;
+    let camera = null;
+    let renderer = null;
+
+    let earthGroup = null;
+    let earth = null;
+
+    let stars = null;
+
+    let egyptMarker = null;
+    let hondurasMarker = null;
+
+    let routeLine = null;
+    let routeGlow = null;
+    let travelPoint = null;
+
+    let earthReady = false;
+    let journeyStarted = false;
+
+    let animationFrame = null;
+
+    let currentZoom = 15;
+
+    let isDragging = false;
+
+    let previousX = 0;
+    let previousY = 0;
+
+    let targetRotationX = -0.12;
+
+    let targetRotationY = -0.45;
+
+    let rotationVelocity = 0;
+
+    let pinchDistance = null;
+
+
+    /* =====================================================
+       LOAD THREE.JS
+       ===================================================== */
+
+    function loadThreeJS() {
+
+        return new Promise((resolve, reject) => {
+
+            if (window.THREE) {
+
+                THREE = window.THREE;
+
+                resolve();
+
+                return;
+            }
+
+
+            const script =
+                document.createElement("script");
+
+            script.src =
+                "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.min.js";
+
+            script.onload = () => {
+
+                if (!window.THREE) {
+
+                    reject(
+                        new Error(
+                            "Three.js loaded but is unavailable."
+                        )
+                    );
+
+                    return;
+                }
+
+                THREE = window.THREE;
+
+                resolve();
+            };
+
+
+            script.onerror = () => {
+
+                reject(
+                    new Error(
+                        "Could not load Three.js."
+                    )
+                );
+            };
+
+
+            document.head.appendChild(script);
+        });
+    }
+
+
+    /* =====================================================
+       LAT/LNG → 3D
+       ===================================================== */
+
+    const EARTH_RADIUS = 5;
+
 
     function latLngToVector3(
         latitude,
@@ -285,19 +237,15 @@ document.addEventListener("DOMContentLoaded", () => {
         radius
     ) {
 
-        /*
-         * Convert geographic coordinates
-         * into a position on a sphere.
-         */
-
         const phi =
             (90 - latitude) *
-            Math.PI / 180;
-
+            Math.PI /
+            180;
 
         const theta =
             (longitude + 180) *
-            Math.PI / 180;
+            Math.PI /
+            180;
 
 
         const x =
@@ -325,8 +273,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
+    function latLngToUnitVector(
+        latitude,
+        longitude
+    ) {
+
+        return latLngToVector3(
+            latitude,
+            longitude,
+            1
+        ).normalize();
+    }
+
+
     /* =====================================================
-       GREAT CIRCLE POINTS
+       GREAT CIRCLE
        ===================================================== */
 
     function createGreatCirclePoints(
@@ -364,23 +325,6 @@ document.addEventListener("DOMContentLoaded", () => {
             Math.acos(dot);
 
 
-        if (angle < 0.00001) {
-
-            return [
-                latLngToVector3(
-                    start.lat,
-                    start.lng,
-                    EARTH_RADIUS + 0.08
-                ),
-                latLngToVector3(
-                    end.lat,
-                    end.lng,
-                    EARTH_RADIUS + 0.08
-                )
-            ];
-        }
-
-
         const sinAngle =
             Math.sin(angle);
 
@@ -398,13 +342,15 @@ document.addEventListener("DOMContentLoaded", () => {
             const a =
                 Math.sin(
                     (1 - t) * angle
-                ) / sinAngle;
+                ) /
+                sinAngle;
 
 
             const b =
                 Math.sin(
                     t * angle
-                ) / sinAngle;
+                ) /
+                sinAngle;
 
 
             const vector =
@@ -420,15 +366,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     .normalize();
 
 
-            /*
-             * Slightly above the surface.
-             */
-
             const altitude =
                 EARTH_RADIUS +
                 0.08 +
-                Math.sin(t * Math.PI) *
-                0.65;
+                Math.sin(
+                    t * Math.PI
+                ) * 0.65;
 
 
             vector.multiplyScalar(
@@ -445,28 +388,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =====================================================
-       LAT / LNG → UNIT VECTOR
-       ===================================================== */
-
-    function latLngToUnitVector(
-        latitude,
-        longitude
-    ) {
-
-        const vector =
-            latLngToVector3(
-                latitude,
-                longitude,
-                1
-            );
-
-
-        return vector.normalize();
-    }
-
-
-    /* =====================================================
-       CREATE STARS
+       STARS
        ===================================================== */
 
     function createStars() {
@@ -475,29 +397,30 @@ document.addEventListener("DOMContentLoaded", () => {
             new THREE.BufferGeometry();
 
 
-        const starCount = 4500;
+        const count = 3500;
 
 
         const positions =
             new Float32Array(
-                starCount * 3
+                count * 3
             );
 
 
         for (
             let i = 0;
-            i < starCount;
+            i < count;
             i++
         ) {
 
             const radius =
-                30 +
-                Math.random() * 100;
+                35 +
+                Math.random() * 90;
 
 
             const theta =
                 Math.random() *
-                Math.PI * 2;
+                Math.PI *
+                2;
 
 
             const phi =
@@ -536,20 +459,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const material =
             new THREE.PointsMaterial({
 
-                color:
-                    COLORS.white,
+                color: 0xffffff,
 
-                size:
-                    0.075,
+                size: 0.07,
 
-                transparent:
-                    true,
+                transparent: true,
 
-                opacity:
-                    0.8,
-
-                sizeAttenuation:
-                    true
+                opacity: 0.75
             });
 
 
@@ -565,7 +481,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =====================================================
-       CREATE EARTH
+       EARTH
        ===================================================== */
 
     function createEarth() {
@@ -579,10 +495,6 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
 
-        /* =================================================
-           EARTH GEOMETRY
-           ================================================= */
-
         const geometry =
             new THREE.SphereGeometry(
                 EARTH_RADIUS,
@@ -591,72 +503,16 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
 
-        /* =================================================
-           EARTH TEXTURE
-           ================================================= */
-
         const textureLoader =
             new THREE.TextureLoader();
 
 
-        textureLoader.setCrossOrigin(
-            "anonymous"
-        );
-
-
-        const earthTexture =
-            textureLoader.load(
-                "https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg",
-                () => {
-
-                    hideLoading();
-
-                },
-                undefined,
-                () => {
-
-                    console.warn(
-                        "Earth texture could not be loaded."
-                    );
-
-                    hideLoading();
-                }
-            );
-
-
-        /* =================================================
-           NIGHT LIGHTS
-           ================================================= */
-
-        const nightTexture =
-            textureLoader.load(
-                "https://threejs.org/examples/textures/planets/earth_lights_2048.png"
-            );
-
-
-        /* =================================================
-           EARTH MATERIAL
-           ================================================= */
-
         const material =
             new THREE.MeshPhongMaterial({
 
-                map:
-                    earthTexture,
+                color: 0x4477aa,
 
-                emissiveMap:
-                    nightTexture,
-
-                emissive:
-                    new THREE.Color(
-                        0x334466
-                    ),
-
-                emissiveIntensity:
-                    0.22,
-
-                shininess:
-                    8
+                shininess: 10
             });
 
 
@@ -667,10 +523,6 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
 
-        /*
-         * Rotate texture orientation.
-         */
-
         earth.rotation.y =
             -Math.PI / 2;
 
@@ -680,9 +532,9 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
 
-        /* =================================================
-           ATMOSPHERE
-           ================================================= */
+        /* ===============================
+           EARTH ATMOSPHERE
+           =============================== */
 
         const atmosphereGeometry =
             new THREE.SphereGeometry(
@@ -695,27 +547,22 @@ document.addEventListener("DOMContentLoaded", () => {
         const atmosphereMaterial =
             new THREE.MeshBasicMaterial({
 
-                color:
-                    COLORS.atmosphere,
+                color: 0x4da3ff,
 
-                transparent:
-                    true,
+                transparent: true,
 
-                opacity:
-                    0.12,
+                opacity: 0.13,
 
-                side:
-                    THREE.BackSide,
+                side: THREE.BackSide,
 
                 blending:
                     THREE.AdditiveBlending,
 
-                depthWrite:
-                    false
+                depthWrite: false
             });
 
 
-        atmosphere =
+        const atmosphere =
             new THREE.Mesh(
                 atmosphereGeometry,
                 atmosphereMaterial
@@ -727,88 +574,69 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
 
-        /* =================================================
-           OUTER GLOW
-           ================================================= */
+        /* ===============================
+           LOAD EARTH TEXTURE
+           =============================== */
 
-        const glowGeometry =
-            new THREE.SphereGeometry(
-                EARTH_RADIUS * 1.08,
-                64,
-                64
-            );
+        textureLoader.load(
 
+            "https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg",
 
-        const glowMaterial =
-            new THREE.MeshBasicMaterial({
+            texture => {
 
-                color:
-                    COLORS.atmosphere,
+                texture.colorSpace =
+                    THREE.SRGBColorSpace;
 
-                transparent:
-                    true,
+                earth.material.map =
+                    texture;
 
-                opacity:
-                    0.035,
+                earth.material.color.set(
+                    0xffffff
+                );
 
-                side:
-                    THREE.BackSide,
+                earth.material.needsUpdate =
+                    true;
+            },
 
-                blending:
-                    THREE.AdditiveBlending,
+            undefined,
 
-                depthWrite:
-                    false
-            });
+            error => {
 
-
-        const glow =
-            new THREE.Mesh(
-                glowGeometry,
-                glowMaterial
-            );
-
-
-        earthGroup.add(
-            glow
+                console.warn(
+                    "Earth texture unavailable.",
+                    error
+                );
+            }
         );
     }
 
 
     /* =====================================================
-       CREATE LIGHTING
+       LIGHTING
        ===================================================== */
 
     function createLighting() {
 
-        /*
-         * Ambient light.
-         */
-
-        const ambientLight =
+        const ambient =
             new THREE.AmbientLight(
                 0x7890b0,
-                0.65
+                0.7
             );
 
 
         scene.add(
-            ambientLight
+            ambient
         );
 
 
-        /*
-         * Main sunlight.
-         */
-
-        const sunLight =
+        const sun =
             new THREE.DirectionalLight(
                 0xffffff,
                 2.4
             );
 
 
-        sunLight.position.set(
+        sun.position.set(
             -10,
             6,
             10
@@ -816,22 +644,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
         scene.add(
-            sunLight
+            sun
         );
 
 
-        /*
-         * Soft blue fill.
-         */
-
-        const fillLight =
+        const fill =
             new THREE.DirectionalLight(
-                0x426aa8,
+                0x416ca8,
                 0.5
             );
 
 
-        fillLight.position.set(
+        fill.position.set(
             8,
             -3,
             -8
@@ -839,18 +663,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
         scene.add(
-            fillLight
+            fill
         );
     }
 
 
     /* =====================================================
-       CREATE COUNTRY MARKER
+       COUNTRY MARKERS
        ===================================================== */
 
     function createCountryMarker(
-        location,
-        type
+        location
     ) {
 
         const group =
@@ -870,29 +693,18 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
 
-        /*
-         * Core.
-         */
-
-        const coreGeometry =
-            new THREE.SphereGeometry(
-                0.09,
-                16,
-                16
-            );
-
-
-        const coreMaterial =
-            new THREE.MeshBasicMaterial({
-                color:
-                    COLORS.white
-            });
-
-
         const core =
             new THREE.Mesh(
-                coreGeometry,
-                coreMaterial
+
+                new THREE.SphereGeometry(
+                    0.09,
+                    16,
+                    16
+                ),
+
+                new THREE.MeshBasicMaterial({
+                    color: 0xffffff
+                })
             );
 
 
@@ -901,94 +713,28 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
 
-        /*
-         * Glow ring.
-         */
-
-        const ringGeometry =
-            new THREE.RingGeometry(
-                0.13,
-                0.17,
-                32
-            );
-
-
-        const ringMaterial =
-            new THREE.MeshBasicMaterial({
-
-                color:
-                    COLORS.white,
-
-                transparent:
-                    true,
-
-                opacity:
-                    0.8,
-
-                side:
-                    THREE.DoubleSide
-            });
-
-
-        const ring =
-            new THREE.Mesh(
-                ringGeometry,
-                ringMaterial
-            );
-
-
-        /*
-         * Point the ring outward
-         * from the Earth's center.
-         */
-
-        ring.quaternion.setFromUnitVectors(
-            new THREE.Vector3(0, 0, 1),
-            position.clone().normalize()
-        );
-
-
-        group.add(
-            ring
-        );
-
-
-        /*
-         * Larger transparent glow.
-         */
-
-        const glowGeometry =
-            new THREE.SphereGeometry(
-                0.28,
-                24,
-                24
-            );
-
-
-        const glowMaterial =
-            new THREE.MeshBasicMaterial({
-
-                color:
-                    COLORS.white,
-
-                transparent:
-                    true,
-
-                opacity:
-                    0.08,
-
-                blending:
-                    THREE.AdditiveBlending,
-
-                depthWrite:
-                    false
-            });
-
-
         const glow =
             new THREE.Mesh(
-                glowGeometry,
-                glowMaterial
+
+                new THREE.SphereGeometry(
+                    0.28,
+                    20,
+                    20
+                ),
+
+                new THREE.MeshBasicMaterial({
+
+                    color: 0x6da9ff,
+
+                    transparent: true,
+
+                    opacity: 0.15,
+
+                    blending:
+                        THREE.AdditiveBlending,
+
+                    depthWrite: false
+                })
             );
 
 
@@ -1007,7 +753,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =====================================================
-       CREATE ROUTE
+       ROUTE
        ===================================================== */
 
     function createRoute() {
@@ -1030,14 +776,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const material =
             new THREE.LineBasicMaterial({
 
-                color:
-                    COLORS.route,
+                color: 0xffffff,
 
-                transparent:
-                    true,
+                transparent: true,
 
-                opacity:
-                    0.9
+                opacity: 0.9
             });
 
 
@@ -1048,11 +791,8 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
 
-        /*
-         * Hidden initially.
-         */
-
-        routeLine.visible = false;
+        routeLine.visible =
+            false;
 
 
         earthGroup.add(
@@ -1060,21 +800,14 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
 
-        /* =================================================
-           GLOW ROUTE
-           ================================================= */
-
         const glowMaterial =
             new THREE.LineBasicMaterial({
 
-                color:
-                    COLORS.softBlue,
+                color: 0x4d8cff,
 
-                transparent:
-                    true,
+                transparent: true,
 
-                opacity:
-                    0.18
+                opacity: 0.2
             });
 
 
@@ -1085,14 +818,8 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
 
-        routeGlow.scale.set(
-            1.002,
-            1.002,
-            1.002
-        );
-
-
-        routeGlow.visible = false;
+        routeGlow.visible =
+            false;
 
 
         earthGroup.add(
@@ -1100,30 +827,18 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
 
-        /* =================================================
-           MOVING POINT
-           ================================================= */
-
-        const pointGeometry =
-            new THREE.SphereGeometry(
-                0.12,
-                20,
-                20
-            );
-
-
-        const pointMaterial =
-            new THREE.MeshBasicMaterial({
-
-                color:
-                    COLORS.white
-            });
-
-
         travelPoint =
             new THREE.Mesh(
-                pointGeometry,
-                pointMaterial
+
+                new THREE.SphereGeometry(
+                    0.12,
+                    20,
+                    20
+                ),
+
+                new THREE.MeshBasicMaterial({
+                    color: 0xffffff
+                })
             );
 
 
@@ -1136,29 +851,34 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
 
-        /*
-         * Store points for animation.
-         */
-
         routeLine.userData.points =
             points;
     }
 
 
     /* =====================================================
-       CREATE THREE.JS
+       INITIALIZE THREE
        ===================================================== */
 
     function initializeThree() {
 
-        if (!earthContainer) {
+        if (
+            !earthContainer ||
+            !THREE
+        ) {
             return;
         }
 
 
-        /* =================================================
-           SCENE
-           ================================================= */
+        /* Prevent duplicate initialization */
+
+        if (renderer) {
+
+            handleResize();
+
+            return;
+        }
+
 
         scene =
             new THREE.Scene();
@@ -1170,24 +890,24 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
 
-        /* =================================================
-           CAMERA
-           ================================================= */
-
         camera =
             new THREE.PerspectiveCamera(
+
                 45,
+
                 earthContainer.clientWidth /
                 earthContainer.clientHeight,
+
                 0.1,
+
                 300
             );
 
 
         camera.position.set(
             0,
-            1,
-            CAMERA_START_DISTANCE
+            0.7,
+            currentZoom
         );
 
 
@@ -1198,18 +918,12 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
 
-        /* =================================================
-           RENDERER
-           ================================================= */
-
         renderer =
             new THREE.WebGLRenderer({
 
-                antialias:
-                    true,
+                antialias: true,
 
-                alpha:
-                    false,
+                alpha: false,
 
                 powerPreference:
                     "high-performance"
@@ -1230,8 +944,16 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
 
-        renderer.outputColorSpace =
-            THREE.SRGBColorSpace;
+        if (
+            "outputColorSpace" in renderer
+        ) {
+
+            renderer.outputColorSpace =
+                THREE.SRGBColorSpace;
+        }
+
+
+        earthContainer.innerHTML = "";
 
 
         earthContainer.appendChild(
@@ -1239,89 +961,41 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
 
-        /* =================================================
-           OBJECTS
-           ================================================= */
-
         createLighting();
 
         createStars();
 
         createEarth();
 
-
-        /* =================================================
-           MARKERS
-           ================================================= */
-
         egyptMarker =
             createCountryMarker(
-                egypt,
-                "egypt"
+                egypt
             );
-
 
         hondurasMarker =
             createCountryMarker(
-                honduras,
-                "honduras"
+                honduras
             );
-
-
-        /* =================================================
-           ROUTE
-           ================================================= */
 
         createRoute();
 
 
-        /* =================================================
-           READY
-           ================================================= */
-
         earthReady = true;
 
 
-        hideLoading();
+        if (earthLoading) {
 
+            setTimeout(() => {
 
-        /*
-         * Initial cinematic position.
-         */
+                earthLoading.classList.add(
+                    "hidden"
+                );
 
-        earthGroup.rotation.x =
-            -0.12;
-
-        earthGroup.rotation.y =
-            -0.45;
-
-
-        /*
-         * Start render loop.
-         */
-
-        animate();
-    }
-
-
-    /* =====================================================
-       HIDE LOADING
-       ===================================================== */
-
-    function hideLoading() {
-
-        if (!earthLoading) {
-            return;
+            }, 500);
         }
 
 
-        setTimeout(() => {
-
-            earthLoading.classList.add(
-                "hidden"
-            );
-
-        }, 500);
+        animate();
     }
 
 
@@ -1355,14 +1029,6 @@ document.addEventListener("DOMContentLoaded", () => {
         camera.updateProjectionMatrix();
 
 
-        renderer.setPixelRatio(
-            Math.min(
-                window.devicePixelRatio || 1,
-                2
-            )
-        );
-
-
         renderer.setSize(
             width,
             height
@@ -1377,12 +1043,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =====================================================
-       POINTER DOWN
+       ROTATION
        ===================================================== */
 
-    function pointerDown(event) {
+    function startDragging(event) {
 
-        if (!earthReady) {
+        if (
+            !earthReady ||
+            !earthScene.classList.contains(
+                "active"
+            )
+        ) {
             return;
         }
 
@@ -1390,25 +1061,19 @@ document.addEventListener("DOMContentLoaded", () => {
         isDragging = true;
 
 
-        previousPointerX =
+        previousX =
             event.clientX;
 
 
-        previousPointerY =
+        previousY =
             event.clientY;
 
 
-        rotationVelocityX = 0;
-
-        rotationVelocityY = 0;
+        rotationVelocity = 0;
     }
 
 
-    /* =====================================================
-       POINTER MOVE
-       ===================================================== */
-
-    function pointerMove(event) {
+    function moveDragging(event) {
 
         if (
             !isDragging ||
@@ -1418,119 +1083,78 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
 
-        const deltaX =
+        const dx =
             event.clientX -
-            previousPointerX;
+            previousX;
 
 
-        const deltaY =
+        const dy =
             event.clientY -
-            previousPointerY;
+            previousY;
 
 
-        previousPointerX =
+        previousX =
             event.clientX;
 
 
-        previousPointerY =
+        previousY =
             event.clientY;
 
 
-        /*
-         * Horizontal rotation.
-         */
+        targetRotationY +=
+            dx * 0.004;
 
-        earthGroup.rotation.y +=
-            deltaX * 0.004;
-
-
-        /*
-         * Vertical rotation.
-         */
 
         targetRotationX +=
-            deltaY * 0.0025;
+            dy * 0.0025;
 
 
         targetRotationX =
             THREE.MathUtils.clamp(
                 targetRotationX,
-                -0.75,
-                0.75
+                -0.8,
+                0.8
             );
 
 
-        rotationVelocityY =
-            deltaX * 0.002;
-
-
-        rotationVelocityX =
-            deltaY * 0.0015;
+        rotationVelocity =
+            dx * 0.002;
     }
 
 
-    /* =====================================================
-       POINTER UP
-       ===================================================== */
-
-    function pointerUp() {
+    function stopDragging() {
 
         isDragging = false;
     }
 
 
-    rendererPointerEvents();
+    document.addEventListener(
+        "pointerdown",
+        startDragging
+    );
 
 
-    function rendererPointerEvents() {
-
-        document.addEventListener(
-            "pointerdown",
-            pointerDown,
-            {
-                passive: true
-            }
-        );
+    document.addEventListener(
+        "pointermove",
+        moveDragging
+    );
 
 
-        document.addEventListener(
-            "pointermove",
-            pointerMove,
-            {
-                passive: true
-            }
-        );
-
-
-        document.addEventListener(
-            "pointerup",
-            pointerUp,
-            {
-                passive: true
-            }
-        );
-
-
-        document.addEventListener(
-            "pointercancel",
-            pointerUp,
-            {
-                passive: true
-            }
-        );
-    }
+    document.addEventListener(
+        "pointerup",
+        stopDragging
+    );
 
 
     /* =====================================================
-       WHEEL ZOOM
+       ZOOM
        ===================================================== */
 
     document.addEventListener(
         "wheel",
-        (event) => {
+        event => {
 
             if (
-                !earthScene ||
                 !earthScene.classList.contains(
                     "active"
                 )
@@ -1546,8 +1170,8 @@ document.addEventListener("DOMContentLoaded", () => {
             currentZoom =
                 THREE.MathUtils.clamp(
                     currentZoom,
-                    CAMERA_MIN_DISTANCE,
-                    CAMERA_MAX_DISTANCE
+                    6,
+                    22
                 );
         },
         {
@@ -1560,12 +1184,9 @@ document.addEventListener("DOMContentLoaded", () => {
        TOUCH PINCH
        ===================================================== */
 
-    let initialPinchDistance = null;
-
-
     document.addEventListener(
         "touchstart",
-        (event) => {
+        event => {
 
             if (
                 event.touches.length !== 2
@@ -1574,21 +1195,18 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
 
-            const first =
+            const a =
                 event.touches[0];
 
 
-            const second =
+            const b =
                 event.touches[1];
 
 
-            initialPinchDistance =
+            pinchDistance =
                 Math.hypot(
-                    first.clientX -
-                    second.clientX,
-
-                    first.clientY -
-                    second.clientY
+                    a.clientX - b.clientX,
+                    a.clientY - b.clientY
                 );
         },
         {
@@ -1599,37 +1217,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.addEventListener(
         "touchmove",
-        (event) => {
+        event => {
 
             if (
                 event.touches.length !== 2 ||
-                initialPinchDistance === null
+                pinchDistance === null ||
+                !THREE
             ) {
                 return;
             }
 
 
-            const first =
+            const a =
                 event.touches[0];
 
 
-            const second =
+            const b =
                 event.touches[1];
 
 
-            const currentDistance =
+            const newDistance =
                 Math.hypot(
-                    first.clientX -
-                    second.clientX,
-
-                    first.clientY -
-                    second.clientY
+                    a.clientX - b.clientX,
+                    a.clientY - b.clientY
                 );
 
 
             const difference =
-                currentDistance -
-                initialPinchDistance;
+                newDistance -
+                pinchDistance;
 
 
             currentZoom -=
@@ -1639,14 +1255,13 @@ document.addEventListener("DOMContentLoaded", () => {
             currentZoom =
                 THREE.MathUtils.clamp(
                     currentZoom,
-                    CAMERA_MIN_DISTANCE,
-                    CAMERA_MAX_DISTANCE
+                    6,
+                    22
                 );
 
 
-            initialPinchDistance =
-                currentDistance;
-
+            pinchDistance =
+                newDistance;
         },
         {
             passive: true
@@ -1658,8 +1273,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "touchend",
         () => {
 
-            initialPinchDistance =
-                null;
+            pinchDistance = null;
 
         },
         {
@@ -1669,206 +1283,67 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =====================================================
-       CAMERA ANIMATION
+       ANIMATION
        ===================================================== */
 
-    function animateCameraTo(
-        targetDistance,
-        duration = 2200
+    function animate(
+        time = performance.now()
     ) {
 
-        const startDistance =
-            currentZoom;
-
-
-        const startTime =
-            performance.now();
-
-
-        cameraAnimation = {
-            startDistance,
-            targetDistance,
-            duration,
-            startTime
-        };
-    }
-
-
-    /* =====================================================
-       UPDATE CAMERA
-       ===================================================== */
-
-    function updateCamera(
-        currentTime
-    ) {
-
-        if (
-            !cameraAnimation ||
-            !camera
-        ) {
-            return;
-        }
-
-
-        const elapsed =
-            currentTime -
-            cameraAnimation.startTime;
-
-
-        let progress =
-            elapsed /
-            cameraAnimation.duration;
-
-
-        progress =
-            THREE.MathUtils.clamp(
-                progress,
-                0,
-                1
+        animationFrame =
+            requestAnimationFrame(
+                animate
             );
 
 
-        /*
-         * Smooth easing.
-         */
+        if (earthGroup) {
 
-        const eased =
-            1 -
-            Math.pow(
-                1 - progress,
-                3
-            );
+            if (!isDragging) {
 
+                if (!journeyStarted) {
 
-        currentZoom =
-            THREE.MathUtils.lerp(
-                cameraAnimation.startDistance,
-                cameraAnimation.targetDistance,
-                eased
-            );
+                    targetRotationY +=
+                        0.0007;
+                }
 
+                targetRotationY +=
+                    rotationVelocity;
 
-        if (progress >= 1) {
+                rotationVelocity *=
+                    0.94;
+            }
 
-            cameraAnimation = null;
-        }
-    }
-
-
-    /* =====================================================
-       UPDATE ROTATION
-       ===================================================== */
-
-    function updateRotation() {
-
-        if (!earthGroup) {
-            return;
-        }
-
-
-        /*
-         * Automatic slow rotation before journey.
-         */
-
-        if (
-            !isDragging &&
-            !journeyStarted
-        ) {
 
             earthGroup.rotation.y +=
-                0.0007;
+                (
+                    targetRotationY -
+                    earthGroup.rotation.y
+                ) * 0.08;
+
+
+            earthGroup.rotation.x +=
+                (
+                    targetRotationX -
+                    earthGroup.rotation.x
+                ) * 0.08;
         }
 
 
-        /*
-         * Momentum after dragging.
-         */
+        if (stars) {
 
-        if (
-            !isDragging &&
-            journeyStarted === false
-        ) {
-
-            earthGroup.rotation.y +=
-                rotationVelocityY;
-
-
-            targetRotationX +=
-                rotationVelocityX;
-
-
-            rotationVelocityY *=
-                0.94;
-
-
-            rotationVelocityX *=
-                0.94;
+            stars.rotation.y +=
+                0.00003;
         }
-
-
-        /*
-         * Smooth vertical rotation.
-         */
-
-        earthGroup.rotation.x +=
-            (
-                targetRotationX -
-                earthGroup.rotation.x
-            ) * 0.08;
-    }
-
-
-    /* =====================================================
-       UPDATE CAMERA POSITION
-       ===================================================== */
-
-    function updateCameraPosition() {
-
-        if (!camera) {
-            return;
-        }
-
-
-        /*
-         * Keep camera slightly above
-         * the equator for cinematic view.
-         */
-
-        const vertical =
-            0.7;
-
-
-        camera.position.set(
-            0,
-            vertical,
-            currentZoom
-        );
-
-
-        camera.lookAt(
-            0,
-            0,
-            0
-        );
-    }
-
-
-    /* =====================================================
-       ANIMATE MARKERS
-       ===================================================== */
-
-    function animateMarkers(
-        time
-    ) {
-
-        const pulse =
-            1 +
-            Math.sin(
-                time * 0.003
-            ) * 0.15;
 
 
         if (egyptMarker) {
+
+            const pulse =
+                1 +
+                Math.sin(
+                    time * 0.003
+                ) * 0.15;
+
 
             egyptMarker.scale.set(
                 pulse,
@@ -1880,53 +1355,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (hondurasMarker) {
 
+            const pulse =
+                1 +
+                Math.sin(
+                    time * 0.003
+                ) * 0.15;
+
+
             hondurasMarker.scale.set(
                 pulse,
                 pulse,
                 pulse
             );
         }
-    }
 
 
-    /* =====================================================
-       ANIMATE
-       ===================================================== */
+        if (camera) {
 
-    function animate(
-        currentTime = performance.now()
-    ) {
+            camera.position.z =
+                currentZoom;
 
-        animationFrame =
-            requestAnimationFrame(
-                animate
+
+            camera.lookAt(
+                0,
+                0,
+                0
             );
-
-
-        updateCamera(
-            currentTime
-        );
-
-
-        updateRotation();
-
-
-        updateCameraPosition();
-
-
-        animateMarkers(
-            currentTime
-        );
-
-
-        if (stars) {
-
-            stars.rotation.y +=
-                0.00003;
         }
 
 
-        if (renderer && scene && camera) {
+        if (
+            renderer &&
+            scene &&
+            camera
+        ) {
 
             renderer.render(
                 scene,
@@ -1937,13 +1399,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =====================================================
-       START ROUTE
+       ROUTE ANIMATION
        ===================================================== */
 
     function startRouteAnimation() {
 
         if (
             !routeLine ||
+            !routeGlow ||
             !travelPoint
         ) {
             return;
@@ -1974,66 +1437,23 @@ document.addEventListener("DOMContentLoaded", () => {
             true;
 
 
-        /*
-         * Start at Egypt.
-         */
-
-        travelPoint.position.copy(
-            points[0]
-        );
-
-
-        /*
-         * Empty geometry initially.
-         */
-
-        routeLine.geometry =
-            new THREE.BufferGeometry()
-                .setFromPoints([
-                    points[0]
-                ]);
-
-
-        routeGlow.geometry =
-            new THREE.BufferGeometry()
-                .setFromPoints([
-                    points[0]
-                ]);
-
-
         const duration =
-            8500;
+            8000;
 
 
         const startTime =
             performance.now();
 
 
-        function animateRoute(
-            currentTime
-        ) {
+        function drawRoute(time) {
 
-            const elapsed =
-                currentTime -
-                startTime;
-
-
-            let progress =
-                elapsed /
-                duration;
-
-
-            progress =
-                THREE.MathUtils.clamp(
-                    progress,
-                    0,
+            const progress =
+                Math.min(
+                    (time - startTime) /
+                    duration,
                     1
                 );
 
-
-            /*
-             * Cinematic easing.
-             */
 
             const eased =
                 progress < 0.5
@@ -2083,81 +1503,60 @@ document.addEventListener("DOMContentLoaded", () => {
                     );
 
 
-            const currentPoint =
-                points[index];
-
-
-            if (currentPoint) {
+            if (points[index]) {
 
                 travelPoint.position.copy(
-                    currentPoint
+                    points[index]
                 );
             }
 
 
-            /*
-             * Update story.
-             */
+            if (storyText) {
 
-            if (
-                storyText &&
-                progress < 0.35
-            ) {
+                if (progress < 0.33) {
 
-                storyText.textContent =
-                    "Un camino comienza a cruzar el mundo...";
-            }
+                    storyText.textContent =
+                        "Un camino comienza a cruzar el mundo...";
 
+                } else if (
+                    progress < 0.7
+                ) {
 
-            if (
-                storyText &&
-                progress >= 0.35 &&
-                progress < 0.75
-            ) {
+                    storyText.textContent =
+                        "Miles de kilómetros entre dos corazones...";
 
-                storyText.textContent =
-                    "Miles de kilómetros entre dos corazones...";
-            }
+                } else {
 
-
-            if (
-                storyText &&
-                progress >= 0.75
-            ) {
-
-                storyText.textContent =
-                    "Y aun así, el mundo parece un poco más pequeño.";
+                    storyText.textContent =
+                        "Y aun así, el mundo parece un poco más pequeño.";
+                }
             }
 
 
             if (progress < 1) {
 
                 requestAnimationFrame(
-                    animateRoute
+                    drawRoute
                 );
 
             } else {
 
-                finishRoute();
+                finishJourney();
             }
         }
 
 
         requestAnimationFrame(
-            animateRoute
+            drawRoute
         );
     }
 
 
     /* =====================================================
-       FINISH ROUTE
+       FINISH JOURNEY
        ===================================================== */
 
-    function finishRoute() {
-
-        journeyFinished =
-            true;
-
+    function finishJourney() {
 
         if (travelPoint) {
 
@@ -2173,22 +1572,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
 
-        /*
-         * Slow cinematic zoom.
-         */
-
-        animateCameraTo(
-            8.5,
-            2200
-        );
-
-
-        setTimeout(() => {
-
-            if (!travelButton) {
-                return;
-            }
-
+        if (travelButton) {
 
             travelButton.disabled =
                 false;
@@ -2209,20 +1593,25 @@ document.addEventListener("DOMContentLoaded", () => {
                         finalScene
                     );
                 };
-
-        }, 2500);
+        }
     }
 
 
     /* =====================================================
-       START JOURNEY
+       START BUTTON
        ===================================================== */
 
     if (startJourneyButton) {
 
         startJourneyButton.addEventListener(
             "click",
-            () => {
+            async () => {
+
+                /*
+                 * IMPORTANT:
+                 * First change the scene.
+                 * Do not wait for Three.js.
+                 */
 
                 showScene(
                     earthScene
@@ -2230,22 +1619,47 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
                 /*
-                 * Initialize only once.
+                 * Show loading.
                  */
 
-                if (!earthReady) {
+                if (earthLoading) {
 
-                    setTimeout(() => {
-
-                        initializeThree();
-
-                    }, 100);
-
-                } else {
-
-                    handleResize();
+                    earthLoading.classList.remove(
+                        "hidden"
+                    );
                 }
 
+
+                /*
+                 * Load Three.js after
+                 * entering the scene.
+                 */
+
+                try {
+
+                    await loadThreeJS();
+
+
+                    initializeThree();
+
+
+                } catch (error) {
+
+                    console.error(
+                        "Three.js error:",
+                        error
+                    );
+
+
+                    if (earthLoading) {
+
+                        earthLoading.innerHTML = `
+                            <span>
+                                No se pudo cargar el mundo 3D.
+                            </span>
+                        `;
+                    }
+                }
             }
         );
     }
@@ -2262,8 +1676,8 @@ document.addEventListener("DOMContentLoaded", () => {
             () => {
 
                 if (
-                    journeyStarted ||
-                    !earthReady
+                    !earthReady ||
+                    journeyStarted
                 ) {
                     return;
                 }
@@ -2292,95 +1706,25 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
 
-                /*
-                 * Pull camera back first.
-                 */
+                setTimeout(
+                    () => {
 
-                animateCameraTo(
-                    12,
-                    1800
+                        startRouteAnimation();
+
+                    },
+                    1200
                 );
-
-
-                /*
-                 * Slightly rotate the Earth.
-                 */
-
-                if (earthGroup) {
-
-                    earthGroup.rotation.y +=
-                        0.25;
-                }
-
-
-                /*
-                 * Start the route.
-                 */
-
-                setTimeout(() => {
-
-                    startRouteAnimation();
-
-                }, 1800);
-
             }
         );
     }
 
 
     /* =====================================================
-       DOUBLE CLICK
-       ===================================================== */
-
-    document.addEventListener(
-        "dblclick",
-        (event) => {
-
-            if (
-                !earthScene ||
-                !earthScene.classList.contains(
-                    "active"
-                )
-            ) {
-                return;
-            }
-
-
-            currentZoom =
-                THREE.MathUtils.clamp(
-                    currentZoom - 1.5,
-                    CAMERA_MIN_DISTANCE,
-                    CAMERA_MAX_DISTANCE
-                );
-        }
-    );
-
-
-    /* =====================================================
-       INITIAL SCENE
+       INITIAL STATE
        ===================================================== */
 
     showScene(
         introScene
-    );
-
-
-    /* =====================================================
-       CLEANUP
-       ===================================================== */
-
-    window.addEventListener(
-        "beforeunload",
-        () => {
-
-            if (animationFrame) {
-
-                cancelAnimationFrame(
-                    animationFrame
-                );
-            }
-
-        }
     );
 
 });

@@ -1,95 +1,95 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" dir="ltr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Entre Dos Mundos</title>
-  
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
-  
-  <!-- CSS Style -->
-  <link rel="stylesheet" href="css/style.css">
-  
-  <!-- Three.js & Globe.gl via Reliable CDN -->
-  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
-  <script src="https://unpkg.com/globe.gl@2.27.2/dist/globe.gl.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>De El Cairo a Tegucigalpa 🇪🇬 🇭🇳</title>
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/animation.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
-  <!-- Loading Screen -->
-  <div id="loadingScreen" class="loading-screen">
-    <div class="loader-content">
-      <div class="spinner"></div>
-      <p id="loadingText" class="loading-text">Preparando nuestro mundo...</p>
+    <!-- Stars Canvas Background -->
+    <div id="stars-container"></div>
+
+    <!-- Language Switcher Floating Button -->
+    <button id="lang-btn" class="lang-switch-btn" onclick="toggleLanguage()">
+        🌐 Español / عربي
+    </button>
+
+    <div class="container">
+        <!-- Header Section -->
+        <header class="hero-section">
+            <h1 data-i18n="title">Entre Dos Mundos</h1>
+            <p class="subtitle" data-i18n="subtitle">12,600 km no son nada cuando las almas están cerca</p>
+            
+            <!-- Live Clocks Bar -->
+            <div class="clocks-wrapper">
+                <div class="clock-card">
+                    <span class="flag">🇪🇬</span>
+                    <h3>El Cairo</h3>
+                    <div id="cairo-clock" class="time">00:00:00</div>
+                    <span class="time-label" data-i18n="cairo-label">Egipto</span>
+                </div>
+                <div class="divider-icon">⚡</div>
+                <div class="clock-card">
+                    <span class="flag">🇭🇳</span>
+                    <h3>Tegucigalpa</h3>
+                    <div id="tegu-clock" class="time">00:00:00</div>
+                    <span class="time-label" data-i18n="tegu-label">Honduras</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Cards Section -->
+        <main class="content-section">
+            <section class="cards-grid">
+                <div class="interactive-card">
+                    <div class="card-icon">☕</div>
+                    <h3 data-i18n="card1-title">Un café compartido</h3>
+                    <p data-i18n="card1-desc">Algún día probaremos el café hondureño frente a las Pirámides de Guiza.</p>
+                </div>
+
+                <div class="interactive-card">
+                    <div class="card-icon">🌌</div>
+                    <h3 data-i18n="card2-title">Mismo cielo</h3>
+                    <p data-i18n="card2-desc">Aunque tengamos 8 horas de diferencia, contemplamos las mismas estrellas.</p>
+                </div>
+
+                <div class="interactive-card">
+                    <div class="card-icon">💬</div>
+                    <h3 data-i18n="card3-title">Nuestras Palabras</h3>
+                    <p data-i18n="card3-desc">Aprendiendo español por ti, mientras tú aprendes dialecto egipcio por mí.</p>
+                </div>
+            </section>
+
+            <!-- Interactive Envelope Section -->
+            <section class="letter-section">
+                <div class="envelope-wrapper" onclick="openLetter()">
+                    <div class="envelope" id="envelope">
+                        <div class="front flap"></div>
+                        <div class="front pocket"></div>
+                        <div class="letter">
+                            <div class="words" id="letter-content" data-i18n="letter-body">
+                                Querida mía... Esta es una promesa de que la distancia actual es solo el comienzo de nuestra gran historia juntos.
+                            </div>
+                        </div>
+                        <div class="wax-seal">📜</div>
+                    </div>
+                </div>
+                <p class="envelope-hint" data-i18n="envelope-hint">Haz clic en el sobre para abrir la carta</p>
+            </section>
+        </main>
     </div>
-  </div>
 
-  <!-- WebGL Fallback Error Screen -->
-  <div id="errorScreen" class="error-screen hidden">
-    <div class="error-content">
-      <span class="error-icon">⚠️</span>
-      <h2>No se pudo cargar el mundo 3D</h2>
-      <p>Tu navegador o dispositivo no tiene habilitado el soporte para WebGL.</p>
-    </div>
-  </div>
-
-  <!-- 3D Globe Canvas Container -->
-  <div id="globeViz"></div>
-
-  <!-- Intro Scene Overlay -->
-  <div id="introScene" class="scene overlay-scene">
-    <div class="hero-card">
-      <h1 class="main-title">ENTRE DOS MUNDOS</h1>
-      <p class="subtitle-text">Dos países.<br>Un solo camino.</p>
-      <button id="btnDiscover" class="btn-primary">
-        Descubrir la distancia
-      </button>
-    </div>
-  </div>
-
-  <!-- Interactive Experience Overlay (Hidden initially) -->
-  <div id="mainExperienceUI" class="scene overlay-scene hidden">
-    <header class="top-bar">
-      <span class="brand">Entre Dos Mundos</span>
-      <div class="distance-badge">
-        <span class="dist-label">DISTANCIA</span>
-        <span id="distanceValue" class="dist-val">Calculando...</span>
-      </div>
-    </header>
-
-    <!-- Subtitle/Story Overlay for Camera Sequence -->
-    <div id="storyOverlay" class="story-container hidden">
-      <p id="storyText" class="story-text"></p>
-    </div>
-
-    <!-- Bottom Controls -->
-    <footer class="bottom-bar">
-      <button id="btnShowPath" class="btn-primary btn-glow">
-        Mostrar el camino
-      </button>
-      <button id="btnContinue" class="btn-secondary hidden">
-        Continuar
-      </button>
-    </footer>
-  </div>
-
-  <!-- Final Romantic Scene (Destination Container) -->
-  <div id="finalScene" class="scene overlay-scene hidden">
-    <div class="hero-card final-card">
-      <h2 class="final-title">Honduras ♥ Egipto</h2>
-      <p class="final-text">
-        "No importa la distancia que nos separe, siempre compartiremos el mismo cielo y el mismo mundo."
-      </p>
-      <button id="btnRestart" class="btn-secondary">
-        Volver al inicio
-      </button>
-    </div>
-  </div>
-
-  <!-- Main JavaScript Logic -->
-  <script src="js/main.js"></script>
+    <!-- JavaScript Files -->
+    <script src="js/clock.js"></script>
+    <script src="js/i18n.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>

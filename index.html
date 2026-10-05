@@ -3,45 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>De El Cairo a Tegucigalpa 🇪🇬 🇭🇳</title>
+    <title>Cairo & Tegucigalpa — A Connection Across Oceans</title>
+    
     <!-- CSS Files -->
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/animation.css">
-    <!-- Google Fonts -->
+    
+    <!-- Premium Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <!-- Stars Canvas Background -->
+    <!-- Subtle Ambient Background Glows -->
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
     <div id="stars-container"></div>
 
-    <!-- Language Switcher Floating Button -->
-    <button id="lang-btn" class="lang-switch-btn" onclick="toggleLanguage()">
-        🌐 Español / عربي
-    </button>
+    <!-- Floating Glass Header Controls -->
+    <nav class="top-nav">
+        <div class="nav-brand">CAI <span class="connector">✦</span> TGU</div>
+        <button id="lang-btn" class="lang-switch-btn" onclick="toggleLanguage()">
+            <span class="lang-code">ES</span> / <span class="lang-code">AR</span>
+        </button>
+    </nav>
 
     <div class="container">
-        <!-- Header Section -->
+        <!-- Hero Section -->
         <header class="hero-section">
-            <h1 data-i18n="title">Entre Dos Mundos</h1>
-            <p class="subtitle" data-i18n="subtitle">12,600 km no son nada cuando las almas están cerca</p>
+            <div class="pill-tag" data-i18n="hero-tag">12,600 KM • TWO CONTINENTS</div>
+            <h1 data-i18n="title">Across Time & Distance</h1>
+            <p class="subtitle" data-i18n="subtitle">Different timezones, one shared skyline.</p>
             
-            <!-- Live Clocks Bar -->
+            <!-- Sleek Modern Clocks -->
             <div class="clocks-wrapper">
                 <div class="clock-card">
-                    <span class="flag">🇪🇬</span>
-                    <h3>El Cairo</h3>
+                    <div class="location-header">
+                        <span class="city-name">Cairo</span>
+                        <span class="country-code">EG</span>
+                    </div>
                     <div id="cairo-clock" class="time">00:00:00</div>
-                    <span class="time-label" data-i18n="cairo-label">Egipto</span>
+                    <span class="time-label" data-i18n="cairo-label">Local Time</span>
                 </div>
-                <div class="divider-icon">⚡</div>
+
+                <div class="clock-divider">
+                    <div class="pulse-line"></div>
+                </div>
+
                 <div class="clock-card">
-                    <span class="flag">🇭🇳</span>
-                    <h3>Tegucigalpa</h3>
+                    <div class="location-header">
+                        <span class="city-name">Tegucigalpa</span>
+                        <span class="country-code">HN</span>
+                    </div>
                     <div id="tegu-clock" class="time">00:00:00</div>
-                    <span class="time-label" data-i18n="tegu-label">Honduras</span>
+                    <span class="time-label" data-i18n="tegu-label">Local Time</span>
                 </div>
             </div>
         </header>
@@ -49,40 +65,39 @@
         <!-- Main Cards Section -->
         <main class="content-section">
             <section class="cards-grid">
-                <div class="interactive-card">
-                    <div class="card-icon">☕</div>
-                    <h3 data-i18n="card1-title">Un café compartido</h3>
-                    <p data-i18n="card1-desc">Algún día probaremos el café hondureño frente a las Pirámides de Guiza.</p>
+                <div class="glass-card">
+                    <div class="card-num">01</div>
+                    <h3 data-i18n="card1-title">Parallel Horizons</h3>
+                    <p data-i18n="card1-desc">When the sun rises over the Nile, the night settles quietly over Honduran mountains.</p>
                 </div>
 
-                <div class="interactive-card">
-                    <div class="card-icon">🌌</div>
-                    <h3 data-i18n="card2-title">Mismo cielo</h3>
-                    <p data-i18n="card2-desc">Aunque tengamos 8 horas de diferencia, contemplamos las mismas estrellas.</p>
+                <div class="glass-card">
+                    <div class="card-num">02</div>
+                    <h3 data-i18n="card2-title">Shared Language</h3>
+                    <p data-i18n="card2-desc">Building a unique vocabulary between Egyptian warmth and Honduran grace.</p>
                 </div>
 
-                <div class="interactive-card">
-                    <div class="card-icon">💬</div>
-                    <h3 data-i18n="card3-title">Nuestras Palabras</h3>
-                    <p data-i18n="card3-desc">Aprendiendo español por ti, mientras tú aprendes dialecto egipcio por mí.</p>
+                <div class="glass-card">
+                    <div class="card-num">03</div>
+                    <h3 data-i18n="card3-title">The First Meeting</h3>
+                    <p data-i18n="card3-desc">An unspoken promise for a cup of Honduran coffee shared face to face.</p>
                 </div>
             </section>
 
-            <!-- Interactive Envelope Section -->
-            <section class="letter-section">
-                <div class="envelope-wrapper" onclick="openLetter()">
-                    <div class="envelope" id="envelope">
-                        <div class="front flap"></div>
-                        <div class="front pocket"></div>
-                        <div class="letter">
-                            <div class="words" id="letter-content" data-i18n="letter-body">
-                                Querida mía... Esta es una promesa de que la distancia actual es solo el comienzo de nuestra gran historia juntos.
-                            </div>
-                        </div>
-                        <div class="wax-seal">📜</div>
+            <!-- Modern Interactive Card Reveal (Replaces the childish envelope) -->
+            <section class="revelation-section">
+                <div class="interactive-ticket" onclick="openLetter()">
+                    <div class="ticket-glow"></div>
+                    <div class="ticket-header">
+                        <span class="ticket-title" data-i18n="ticket-title">A PRIVATE NOTE</span>
+                        <span class="ticket-status" data-i18n="ticket-status">TAP TO READ</span>
+                    </div>
+                    <div class="ticket-content">
+                        <p id="letter-content" class="letter-text" data-i18n="letter-body">
+                            Although oceans separate us today, every conversation has narrowed the distance. This page is a small reminder that no matter the physical miles, my thoughts naturally gravitate toward you.
+                        </p>
                     </div>
                 </div>
-                <p class="envelope-hint" data-i18n="envelope-hint">Haz clic en el sobre para abrir la carta</p>
             </section>
         </main>
     </div>

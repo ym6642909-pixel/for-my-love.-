@@ -1,311 +1,275 @@
 /* ==========================================================================
-   Entre Dos Mundos - Main JavaScript Application
+   Entre Dos Mundos - Main WebGL & Cinematic Globe Application
    ========================================================================== */
 
-// --- 1. Cesium Ion Token Configuration ---
-// احصل على مفتاحك المجاني من: https://cesium.com/ion/
-// استبدل النص التالي بمفتاحك الخاص للحصول على أعلى دقة صور أقمار صناعية وتضاريس ثلاثية الأبعاد
-Cesium.Ion.defaultAccessToken = 'YOUR_CESIUM_ION_TOKEN';
+// --- 1. Real Geographic Coordinates ---
+const EGYPT_COORDS = { lat: 26.8206, lng: 30.8025, name: 'EGIPTO' };
+const HONDURAS_COORDS = { lat: 14.0723, lng: -86.2419, name: 'HONDURAS' };
 
-// --- 2. Geographic Coordinates ---
-const EGYPT = {
-  name: 'Egipto',
-  lon: 31.2357,
-  lat: 30.0444,
-  height: 0
-};
+// Global Variables & State
+let world;
+let isAnimatingPath = false;
 
-const HONDURAS = {
-  name: 'Honduras',
-  lon: -87.2068,
-  lat: 14.0818,
-  height: 0
-};
+// --- 2. Haversine Distance Calculation ---
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Earth radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return Math.round(R * c);
+}
 
-let viewer;
-
-// --- 3. Initialize Cesium 3D Globe ---
-function initGlobe() {
-  viewer = new Cesium.Viewer('cesiumContainer', {
-    // Basic Providers & UI Options
-    baseLayerPicker: false,
-    geocoder: false,
-    homeButton: false,
-    infoBox: false,
-    sceneModePicker: false,
-    selectionIndicator: false,
-    timeline: false,
-    animation: false,
-    fullscreenButton: false,
-    navigationHelpButton: false,
-    vrButton: false,
-
-    // High quality imagery base layer
-    imageryProvider: new Cesium.ArcGisMapServerImageryProvider({
-      url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer'
-    }),
-    
-    // Enable atmosphere and lighting engine
-    skyAtmosphere: new Cesium.SkyAtmosphere(),
-    contextOptions: {
-      webgl: {
-        alpha: false,
-        antialias: true,
-        preserveDrawingBuffer: true
-      }
-    }
-  });
-
-  // --- Atmospheric & Realistic Visual Enhancements ---
-  const scene = viewer.scene;
-  const globe = scene.globe;
-
-  // Enable Sun lighting & Dynamic Shadow Effects
-  globe.enableLighting = true;
-  globe.showWaterEffect = true;
-  globe.atmosphereLightIntensity = 10.0;
-  
-  // Fog and atmospheric depth effects
-  scene.fog.enabled = true;
-  scene.fog.density = 0.0002;
-  scene.fog.screenSpaceErrorFactor = 2.0;
-
-  // Smooth interaction settings
-  scene.screenSpaceCameraController.enableLook = true;
-  scene.screenSpaceCameraController.enableRotate = true;
-  scene.screenSpaceCameraController.enableZoom = true;
-  scene.screenSpaceCameraController.inertiaSpin = 0.9;
-  scene.screenSpaceCameraController.inertiaTranslate = 0.9;
-  scene.screenSpaceCameraController.inertiaZoom = 0.8;
-
-  // Add Terrain (3D Earth Elevation) if Token is valid
+// --- 3. WebGL Support Detection ---
+function checkWebGLSupport() {
   try {
-    globe.depthTestAgainstTerrain = false;
-  } catch (e) {
-    console.log("Terrain default active");
-  }
-
-  // Render markers and animated arc
-  setupMarkers();
-  drawAnimatedPath();
-  calculateAndDisplayDistance();
-
-  // Set initial camera view showing both continents
-  resetView();
-}
-
-// --- 4. Create Location Markers ---
-function setupMarkers() {
-  // SVG Marker Canvas Helper
-  function createPinCanvas(colorHex) {
     const canvas = document.createElement('canvas');
-    canvas.width = 48;
-    canvas.height = 48;
-    const ctx = canvas.getContext('2d');
+    return !!(window.WebGLRenderingContext && (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+  } catch (e) {
+    return false;
+  }
+}
 
-    // Outer Glow Circle
-    ctx.beginPath();
-    ctx.arc(24, 24, 20, 0, 2 * Math.PI, false);
-    ctx.fillStyle = colorHex + '33';
-    ctx.fill();
-
-    // Inner Solid Circle
-    ctx.beginPath();
-    ctx.arc(24, 24, 10, 0, 2 * Math.PI, false);
-    ctx.fillStyle = colorHex;
-    ctx.fill();
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = '#ffffff';
-    ctx.stroke();
-
-    return canvas;
+// --- 4. Initialize 3D Globe ---
+function initGlobe() {
+  if (!checkWebGLSupport()) {
+    document.getElementById('loadingScreen').classList.add('hidden');
+    document.getElementById('errorScreen').classList.remove('hidden');
+    return;
   }
 
-  // Egypt Pin
-  viewer.entities.add({
-    name: EGYPT.name,
-    position: Cesium.Cartesian3.fromDegrees(EGYPT.lon, EGYPT.lat, EGYPT.height),
-    billboard: {
-      image: createPinCanvas('#d4af37'), // Gold
-      verticalOrigin: Cesium.VerticalOrigin.CENTER,
-      scale: 1.0,
-      width: 40,
-      height: 40
-    },
-    label: {
-      text: 'Egipto ♥',
-      font: '600 16px Montserrat, sans-serif',
-      style: Cesium.LabelStyle.FILL_AND_STROKE,
-      fillColor: Cesium.Color.fromCssColorString('#ffffff'),
-      outlineColor: Cesium.Color.fromCssColorString('#000000'),
-      outlineWidth: 3,
-      verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-      pixelOffset: new Cesium.Cartesian2(0, -25)
-    }
-  });
+  const container = document.getElementById('globeViz');
 
-  // Honduras Pin
-  viewer.entities.add({
-    name: HONDURAS.name,
-    position: Cesium.Cartesian3.fromDegrees(HONDURAS.lon, HONDURAS.lat, HONDURAS.height),
-    billboard: {
-      image: createPinCanvas('#e63946'), // Crimson Red
-      verticalOrigin: Cesium.VerticalOrigin.CENTER,
-      scale: 1.0,
-      width: 40,
-      height: 40
-    },
-    label: {
-      text: 'Honduras ♥',
-      font: '600 16px Montserrat, sans-serif',
-      style: Cesium.LabelStyle.FILL_AND_STROKE,
-      fillColor: Cesium.Color.fromCssColorString('#ffffff'),
-      outlineColor: Cesium.Color.fromCssColorString('#000000'),
-      outlineWidth: 3,
-      verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-      pixelOffset: new Cesium.Cartesian2(0, -25)
-    }
+  // Markers Data
+  const htmlMarkersData = [
+    { ...EGYPT_COORDS, color: '#d4af37', label: 'Egipto 🇪🇬' },
+    { ...HONDURAS_COORDS, color: '#e63946', label: 'Honduras 🇭🇳' }
+  ];
+
+  // Instantiating Globe.gl
+  world = Globe()(container)
+    // High Quality Textures (Natural Earth / Blue Marble open source)
+    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+    .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+    .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
+    // Atmosphere & Lighting
+    .showAtmosphere(true)
+    .atmosphereColor('#3a7bd5')
+    .atmosphereAltitude(0.22)
+    // Auto Rotation
+    .autoRotate(true)
+    .autoRotateSpeed(0.5)
+    // Dynamic 3D HTML Markers tied to Globe
+    .htmlElementsData(htmlMarkersData)
+    .htmlElement(d => {
+      const el = document.createElement('div');
+      el.innerHTML = `
+        <div style="
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          transform: translate(-50%, -100%);
+          pointer-events: none;
+        ">
+          <span style="
+            color: #ffffff;
+            font-family: 'Cinzel', serif;
+            font-size: 11px;
+            font-weight: 600;
+            background: rgba(12, 16, 26, 0.85);
+            padding: 3px 8px;
+            border-radius: 12px;
+            border: 1px solid ${d.color};
+            box-shadow: 0 0 10px ${d.color};
+            white-space: nowrap;
+            margin-bottom: 4px;
+          ">${d.label}</span>
+          <div style="
+            width: 12px;
+            height: 12px;
+            background-color: ${d.color};
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 0 12px ${d.color};
+          "></div>
+        </div>
+      `;
+      return el;
+    });
+
+  // Adjust Device Pixel Ratio for optimized Mobile Performance
+  world.renderer().setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  // Enable Camera Controls Inertia
+  const controls = world.controls();
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.05;
+  controls.rotateSpeed = 0.8;
+  controls.zoomSpeed = 0.8;
+
+  // Add Cloud Layer Mesh
+  addCloudLayer();
+
+  // Initial Camera View (Focusing Atlantic Ocean overview)
+  world.pointOfView({ lat: 20, lng: -25, altitude: 2.5 }, 0);
+
+  // Hide Loading Screen when Texture is loaded
+  setTimeout(() => {
+    document.getElementById('loadingScreen').classList.add('hidden');
+  }, 1200);
+
+  // Handle Resize
+  window.addEventListener('resize', () => {
+    world.width(window.innerWidth);
+    world.height(window.innerHeight);
   });
 }
 
-// --- 5. Draw Glowing & Animated Geodesic Arc ---
-function drawAnimatedPath() {
-  const startCartographic = Cesium.Cartographic.fromDegrees(EGYPT.lon, EGYPT.lat);
-  const endCartographic = Cesium.Cartographic.fromDegrees(HONDURAS.lon, HONDURAS.lat);
+// --- 5. Add Realistic Cloud Layer Mesh ---
+function addCloudLayer() {
+  const CLOUDS_IMG_URL = 'https://unpkg.com/three-globe/example/img/earth-clouds.png';
+  const CLOUDS_ALT = 0.008;
+  const CLOUDS_ROTATION_SPEED = -0.006; // deg/frame
 
-  // Calculate intermediate geodesic points for smooth elevated arc
-  const geodesic = new Cesium.EllipsoidGeodesic(startCartographic, endCartographic);
-  const numPoints = 100;
-  const positions = [];
-
-  for (let i = 0; i <= numPoints; i++) {
-    const fraction = i / numPoints;
-    const cartographic = geodesic.interpolateUsingFraction(fraction);
-    
-    // Create parabolic altitude curve maxing out in the upper atmosphere
-    const height = Math.sin(fraction * Math.PI) * 1200000; // 1,200 km peak height
-    
-    positions.push(
-      Cesium.Cartesian3.fromDegrees(
-        Cesium.Math.toDegrees(cartographic.longitude),
-        Cesium.Math.toDegrees(cartographic.latitude),
-        height
-      )
+  new THREE.TextureLoader().load(CLOUDS_IMG_URL, cloudsTexture => {
+    const clouds = new THREE.Mesh(
+      new THREE.SphereGeometry(world.getGlobeRadius() * (1 + CLOUDS_ALT), 75, 75),
+      new THREE.MeshPhantomMaterial ? new THREE.MeshPhantomMaterial({ map: cloudsTexture, transparent: true }) :
+      new THREE.MeshStandardMaterial({ map: cloudsTexture, transparent: true, opacity: 0.4 })
     );
+    world.scene().add(clouds);
+
+    (function rotateClouds() {
+      clouds.rotation.y += CLOUDS_ROTATION_SPEED * Math.PI / 180;
+      requestAnimationFrame(rotateClouds);
+    })();
+  });
+}
+
+// --- 6. Arc Path Rendering ---
+function renderPathArc() {
+  const arcData = [{
+    startLat: EGYPT_COORDS.lat,
+    startLng: EGYPT_COORDS.lng,
+    endLat: HONDURAS_COORDS.lat,
+    endLng: HONDURAS_COORDS.lng,
+    color: ['#d4af37', '#e63946']
+  }];
+
+  world
+    .arcsData(arcData)
+    .arcColor('color')
+    .arcAltitude(0.35)
+    .arcStroke(1.8)
+    .arcDashLength(0.4)
+    .arcDashGap(0.2)
+    .arcDashAnimateTime(2000);
+}
+
+// --- 7. Cinematic 8-Stage Camera Fly Sequence ---
+function triggerCinematicSequence() {
+  if (isAnimatingPath) return;
+  isAnimatingPath = true;
+
+  const btnShowPath = document.getElementById('btnShowPath');
+  const btnContinue = document.getElementById('btnContinue');
+  const storyOverlay = document.getElementById('storyOverlay');
+  const storyText = document.getElementById('storyText');
+
+  btnShowPath.classList.add('hidden');
+  world.controls().autoRotate = false;
+
+  // Render glowing animated arc
+  renderPathArc();
+
+  // Helper function for updating story text smoothly
+  function updateStory(text) {
+    storyOverlay.classList.remove('hidden');
+    storyText.style.opacity = 0;
+    setTimeout(() => {
+      storyText.innerText = text;
+      storyText.style.opacity = 1;
+    }, 300);
   }
 
-  // Draw Dynamic Glowing Curved Line
-  viewer.entities.add({
-    name: 'El Camino',
-    polyline: {
-      positions: positions,
-      width: 4,
-      material: new Cesium.PolylineGlowMaterialProperty({
-        glowPower: 0.35,
-        taperPower: 0.1,
-        color: Cesium.Color.fromCssColorString('#d4af37')
-      })
-    }
-  });
+  // 8-Stage Sequence Timeline
+  // 1. Zoom to Egypt
+  updateStory("El camino comienza a cruzar el mundo...");
+  world.pointOfView({ lat: EGYPT_COORDS.lat, lng: EGYPT_COORDS.lng, altitude: 1.2 }, 2500);
+
+  // 2. Ascend over Atlantic
+  setTimeout(() => {
+    updateStory("Miles de kilómetros entre dos corazones...");
+    world.pointOfView({ lat: 20, lng: -25, altitude: 2.2 }, 3500);
+  }, 3500);
+
+  // 3. Travel toward Honduras
+  setTimeout(() => {
+    updateStory("Y aun así, el mundo parece un poco más pequeño.");
+    world.pointOfView({ lat: HONDURAS_COORDS.lat, lng: HONDURAS_COORDS.lng, altitude: 1.2 }, 3500);
+  }, 7500);
+
+  // 4. Focus on Honduras & Show Continue Button
+  setTimeout(() => {
+    updateStory("Finalmente... el camino llega hasta Honduras.");
+    btnContinue.classList.remove('hidden');
+    isAnimatingPath = false;
+  }, 11500);
 }
 
-// --- 6. Calculate Great-Circle Real Distance ---
-function calculateAndDisplayDistance() {
-  const p1 = Cesium.Cartographic.fromDegrees(EGYPT.lon, EGYPT.lat);
-  const p2 = Cesium.Cartographic.fromDegrees(HONDURAS.lon, HONDURAS.lat);
-
-  const geodesic = new Cesium.EllipsoidGeodesic(p1, p2);
-  const distanceInMeters = geodesic.surfaceDistance;
-  const distanceInKm = Math.round(distanceInMeters / 1000);
-
-  // Format and insert into UI
-  const distanceElement = document.getElementById('distanceValue');
-  if (distanceElement) {
-    distanceElement.innerText = `${distanceInKm.toLocaleString()} km`;
-  }
-}
-
-// --- 7. Cinematic Fly-To Animation ---
-function flyCinematicPath() {
-  const btnFly = document.getElementById('btnFly');
-  if (btnFly) btnFly.disabled = true;
-
-  // Phase 1: Focus on Egypt
-  viewer.camera.flyTo({
-    destination: Cesium.Cartesian3.fromDegrees(EGYPT.lon, EGYPT.lat, 1500000),
-    orientation: {
-      heading: Cesium.Math.toRadians(0.0),
-      pitch: Cesium.Math.toRadians(-45.0),
-      roll: 0.0
-    },
-    duration: 3,
-    easingFunction: Cesium.EasingFunction.QUADRATIC_IN_OUT,
-    complete: function () {
-      
-      // Phase 2: Ascend and curve across the Atlantic toward Honduras
-      const midLon = (EGYPT.lon + HONDURAS.lon) / 2;
-      const midLat = (EGYPT.lat + HONDURAS.lat) / 2;
-
-      viewer.camera.flyTo({
-        destination: Cesium.Cartesian3.fromDegrees(midLon, midLat, 12000000), // Orbital Altitude
-        orientation: {
-          heading: Cesium.Math.toRadians(-60.0),
-          pitch: Cesium.Math.toRadians(-85.0),
-          roll: 0.0
-        },
-        duration: 4,
-        easingFunction: Cesium.EasingFunction.CUBIC_IN_OUT,
-        complete: function () {
-
-          // Phase 3: Descend cinematically over Honduras
-          viewer.camera.flyTo({
-            destination: Cesium.Cartesian3.fromDegrees(HONDURAS.lon, HONDURAS.lat, 1500000),
-            orientation: {
-              heading: Cesium.Math.toRadians(-30.0),
-              pitch: Cesium.Math.toRadians(-40.0),
-              roll: 0.0
-            },
-            duration: 3,
-            easingFunction: Cesium.EasingFunction.QUADRATIC_OUT,
-            complete: function () {
-              if (btnFly) btnFly.disabled = false;
-            }
-          });
-        }
-      });
-    }
-  });
-}
-
-// --- 8. Reset View to Global Overview ---
-function resetView() {
-  const midLon = (EGYPT.lon + HONDURAS.lon) / 2;
-  const midLat = (EGYPT.lat + HONDURAS.lat) / 2;
-
-  viewer.camera.flyTo({
-    destination: Cesium.Cartesian3.fromDegrees(midLon, midLat, 16000000),
-    orientation: {
-      heading: 0.0,
-      pitch: Cesium.Math.toRadians(-90.0),
-      roll: 0.0
-    },
-    duration: 2.5,
-    easingFunction: Cesium.EasingFunction.CUBIC_IN_OUT
-  });
-}
-
-// --- 9. Event Listeners & Initialization ---
+// --- 8. Event Listeners & Scene Switching ---
 document.addEventListener('DOMContentLoaded', () => {
+  // Initialize WebGL Globe
   initGlobe();
 
-  const btnFly = document.getElementById('btnFly');
-  const btnReset = document.getElementById('btnReset');
+  // Calculate & Set Distance
+  const distance = calculateDistance(
+    EGYPT_COORDS.lat, EGYPT_COORDS.lng,
+    HONDURAS_COORDS.lat, HONDURAS_COORDS.lng
+  );
+  document.getElementById('distanceValue').innerText = `${distance.toLocaleString()} km`;
 
-  if (btnFly) {
-    btnFly.addEventListener('click', flyCinematicPath);
-  }
+  // UI Navigation Buttons
+  const btnDiscover = document.getElementById('btnDiscover');
+  const btnShowPath = document.getElementById('btnShowPath');
+  const btnContinue = document.getElementById('btnContinue');
+  const btnRestart = document.getElementById('btnRestart');
 
-  if (btnReset) {
-    btnReset.addEventListener('click', resetView);
-  }
+  const introScene = document.getElementById('introScene');
+  const mainExperienceUI = document.getElementById('mainExperienceUI');
+  const finalScene = document.getElementById('finalScene');
+
+  // Discover Button Click
+  btnDiscover.addEventListener('click', () => {
+    introScene.classList.add('hidden');
+    mainExperienceUI.classList.remove('hidden');
+  });
+
+  // Show Path Click
+  btnShowPath.addEventListener('click', triggerCinematicSequence);
+
+  // Continue to Final Scene Click
+  btnContinue.addEventListener('click', () => {
+    mainExperienceUI.classList.add('hidden');
+    finalScene.classList.remove('hidden');
+  });
+
+  // Restart Experience Click
+  btnRestart.addEventListener('click', () => {
+    finalScene.classList.add('hidden');
+    introScene.classList.remove('hidden');
+    
+    // Reset Globe State
+    world.arcsData([]);
+    world.controls().autoRotate = true;
+    world.pointOfView({ lat: 20, lng: -25, altitude: 2.5 }, 1500);
+    
+    document.getElementById('btnShowPath').classList.remove('hidden');
+    document.getElementById('btnContinue').classList.add('hidden');
+    document.getElementById('storyOverlay').classList.add('hidden');
+    isAnimatingPath = false;
+  });
 });

@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -8,31 +10,69 @@
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     >
 
-    <meta name="theme-color" content="#05070d">
+    <meta
+        name="theme-color"
+        content="#05070d"
+    >
+
+    <meta
+        name="mobile-web-app-capable"
+        content="yes"
+    >
+
+    <meta
+        name="apple-mobile-web-app-capable"
+        content="yes"
+    >
+
+    <meta
+        name="apple-mobile-web-app-status-bar-style"
+        content="black-translucent"
+    >
 
     <title>Entre Dos Mundos</title>
 
-    <!-- Leaflet -->
+
+    <!-- =================================================
+         LEAFLET CSS
+         ================================================= -->
+
     <link
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIINfQ3XjY7Q5vVf2v2KkZ5Y5Y5Y5Y5Y5Y="
-        crossorigin=""
     >
 
-    <!-- CSS -->
-    <link rel="stylesheet" href="css/style.css">
+
+    <!-- =================================================
+         PROJECT CSS
+         ================================================= -->
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
 </head>
+
 
 <body>
 
-    <!-- =====================================
-         INTRO
-    ====================================== -->
+
+    <!-- =================================================
+         APPLICATION
+         ================================================= -->
 
     <main id="app">
 
-        <section id="intro" class="scene active">
+
+        <!-- =================================================
+             SCENE 1 — INTRO
+             ================================================= -->
+
+        <section
+            id="intro"
+            class="scene active"
+        >
 
             <div class="intro-content">
 
@@ -40,17 +80,23 @@
                     ENTRE DOS MUNDOS
                 </p>
 
+
                 <h1>
-                    Dos países.
-                    <br>
+                    Dos países.<br>
                     Un solo camino.
                 </h1>
+
 
                 <p class="intro-text">
                     Entre Egipto y Honduras hay un mundo entero.
                 </p>
 
-                <button id="startJourney" class="primary-button">
+
+                <button
+                    id="startJourney"
+                    class="primary-button"
+                    type="button"
+                >
                     Descubrir la distancia
                 </button>
 
@@ -59,29 +105,42 @@
         </section>
 
 
-        <!-- =====================================
-             MAP SCENE
-        ====================================== -->
+        <!-- =================================================
+             SCENE 2 — MAP
+             ================================================= -->
 
-        <section id="mapScene" class="scene">
+        <section
+            id="mapScene"
+            class="scene"
+        >
+
+
+            <!-- =================================================
+                 REAL WORLD MAP
+                 ================================================= -->
 
             <div id="map"></div>
 
 
-            <!-- Top information -->
+            <!-- =================================================
+                 MAP HEADER
+                 ================================================= -->
 
             <div class="map-header">
 
+
+                <!-- EGYPT -->
+
                 <div class="location-card">
+
                     <span class="country-label">
                         EGIPTO
                     </span>
 
-                    <strong>
-                        🇪🇬
-                    </strong>
                 </div>
 
+
+                <!-- DISTANCE -->
 
                 <div class="distance-container">
 
@@ -90,11 +149,13 @@
                     </span>
 
                     <strong id="distance">
-                        0 km
+                        Calculando...
                     </strong>
 
                 </div>
 
+
+                <!-- HONDURAS -->
 
                 <div class="location-card">
 
@@ -102,16 +163,14 @@
                         HONDURAS
                     </span>
 
-                    <strong>
-                        🇭🇳
-                    </strong>
-
                 </div>
 
             </div>
 
 
-            <!-- Bottom story -->
+            <!-- =================================================
+                 STORY PANEL
+                 ================================================= -->
 
             <div class="map-story">
 
@@ -119,7 +178,12 @@
                     Hay un mundo entero entre nosotros...
                 </p>
 
-                <button id="travelButton" class="primary-button">
+
+                <button
+                    id="travelButton"
+                    class="primary-button"
+                    type="button"
+                >
                     Mostrar el camino
                 </button>
 
@@ -128,30 +192,38 @@
         </section>
 
 
-        <!-- =====================================
-             FINAL SCENE
-        ====================================== -->
+        <!-- =================================================
+             SCENE 3 — FINAL
+             ================================================= -->
 
-        <section id="finalScene" class="scene">
+        <section
+            id="finalScene"
+            class="scene"
+        >
 
             <div class="final-content">
+
 
                 <p class="eyebrow">
                     ENTRE EGIPTO Y HONDURAS
                 </p>
 
+
                 <h2>
                     El mundo es enorme...
                 </h2>
 
+
                 <p>
-                    pero algunas personas hacen
-                    que la distancia parezca pequeña.
+                    pero algunas personas hacen que
+                    la distancia parezca pequeña.
                 </p>
+
 
                 <div class="heart">
                     ♥
                 </div>
+
 
                 <p class="signature">
                     Yousef &amp; Dacia
@@ -161,25 +233,28 @@
 
         </section>
 
+
     </main>
 
 
-    <!-- =====================================
-         LEAFLET
-    ====================================== -->
+    <!-- =================================================
+         LEAFLET JS
+         ================================================= -->
 
     <script
         src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-        crossorigin=""
     ></script>
 
 
-    <!-- =====================================
-         MAIN JAVASCRIPT
-    ====================================== -->
+    <!-- =================================================
+         PROJECT JS
+         ================================================= -->
 
-    <script src="js/main.js"></script>
+    <script
+        src="js/main.js"
+    ></script>
+
 
 </body>
-</html>
+
+    </html>

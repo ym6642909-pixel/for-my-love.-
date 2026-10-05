@@ -13,32 +13,20 @@
 
     <title>Entre Dos Mundos</title>
 
-    <!-- Three.js -->
-    <script
-        src="https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.min.js">
-    </script>
+    <!-- Three.js فقط -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.min.js"></script>
 
-    <!-- Three.js OrbitControls -->
-    <script
-        src="https://cdn.jsdelivr.net/npm/three@0.180.0/examples/js/controls/OrbitControls.js">
-    </script>
-
-    <!-- Project CSS -->
-    <link
-        rel="stylesheet"
-        href="css/style.css"
-    >
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css">
 </head>
-
 
 <body>
 
     <main id="app">
 
-
-        <!-- ================================================
+        <!-- =========================
              SCENE 1 — INTRO
-             ================================================ -->
+             ========================= -->
 
         <section
             id="intro"
@@ -73,29 +61,23 @@
         </section>
 
 
-        <!-- ================================================
-             SCENE 2 — 3D EARTH
-             ================================================ -->
+        <!-- =========================
+             SCENE 2 — EARTH
+             ========================= -->
 
         <section
             id="earthScene"
             class="scene"
         >
 
-            <!-- Three.js Canvas -->
             <div id="earth-container"></div>
 
-
-            <!-- ============================================
-                 TOP INFORMATION
-                 ============================================ -->
 
             <div class="earth-header">
 
                 <div class="country">
                     <span>EGIPTO</span>
                 </div>
-
 
                 <div class="distance-box">
 
@@ -109,7 +91,6 @@
 
                 </div>
 
-
                 <div class="country country-right">
                     <span>HONDURAS</span>
                 </div>
@@ -117,16 +98,11 @@
             </div>
 
 
-            <!-- ============================================
-                 STORY
-                 ============================================ -->
-
             <div class="earth-story">
 
                 <p id="storyText">
                     Un mundo entero entre nosotros...
                 </p>
-
 
                 <button
                     id="travelButton"
@@ -138,10 +114,6 @@
 
             </div>
 
-
-            <!-- ============================================
-                 LOADING
-                 ============================================ -->
 
             <div
                 id="earthLoading"
@@ -159,9 +131,9 @@
         </section>
 
 
-        <!-- ================================================
+        <!-- =========================
              SCENE 3 — FINAL
-             ================================================ -->
+             ========================= -->
 
         <section
             id="finalScene"
@@ -195,11 +167,10 @@
 
         </section>
 
-
     </main>
 
 
-    <!-- Project JavaScript -->
+    <!-- JavaScript -->
     <script src="js/main.js"></script>
 
 </body>

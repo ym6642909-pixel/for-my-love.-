@@ -1,252 +1,53 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    >
-
-    <meta name="theme-color" content="#02040a">
-
-    <title>Entre Dos Mundos</title>
-
-    <!-- Three.js -->
-    <script src="https://unpkg.com/three@0.180.0/build/three.min.js"></script>
-    <!-- CSS -->
-    <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entre Dos Mundos</title>
+  
+  <!-- CesiumJS CSS -->
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.115/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+  
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="css/style.css">
 </head>
-
-
 <body>
 
-<main id="app">
-
-
-    <!-- =========================================
-         SCENE 1
-         ========================================= -->
-
-    <section
-        id="intro"
-        class="scene active"
-    >
-
-        <div class="intro-content">
-
-            <p class="eyebrow">
-                ENTRE DOS MUNDOS
-            </p>
-
-            <h1>
-                Dos países.<br>
-                Un solo camino.
-            </h1>
-
-            <p class="intro-text">
-                Entre Egipto y Honduras hay un mundo entero.
-            </p>
-
-            <!--
-                IMPORTANT:
-                El cambio de escena está directamente
-                en el botón.
-            -->
-
-            <button
-                id="startJourney"
-                class="primary-button"
-                type="button"
-                onclick="
-                    document.getElementById('intro').classList.remove('active');
-                    document.getElementById('earthScene').classList.add('active');
-                "
-            >
-                Descubrir la distancia
-            </button>
-
-        </div>
-
-    </section>
-
-
-    <!-- =========================================
-         SCENE 2
-         ========================================= -->
-
-    <section
-        id="earthScene"
-        class="scene"
-    >
-
-        <div id="earth-container"></div>
-
-
-        <div class="earth-header">
-
-            <div class="country">
-                <span>EGIPTO</span>
-            </div>
-
-
-            <div class="distance-box">
-
-                <small>
-                    DISTANCIA
-                </small>
-
-                <strong id="distance">
-                    0 km
-                </strong>
-
-            </div>
-
-
-            <div class="country country-right">
-                <span>HONDURAS</span>
-            </div>
-
-        </div>
-
-
-        <div class="earth-story">
-
-            <p id="storyText">
-                Un mundo entero entre nosotros...
-            </p>
-
-
-            <button
-                id="travelButton"
-                class="primary-button"
-                type="button"
-            >
-                Mostrar el camino
-            </button>
-
-        </div>
-
-
-        <div
-            id="earthLoading"
-            class="earth-loading"
-        >
-
-            <div class="loading-spinner"></div>
-
-            <span>
-                Preparando el mundo...
-            </span>
-
-        </div>
-
-    </section>
-
-
-    <!-- =========================================
-         SCENE 3
-         ========================================= -->
-
-    <section
-        id="finalScene"
-        class="scene"
-    >
-
-        <div class="final-content">
-
-            <p class="eyebrow">
-                ENTRE EGIPTO Y HONDURAS
-            </p>
-
-            <h2>
-                El mundo es enorme...
-            </h2>
-
-            <p>
-                pero algunas personas hacen
-                que la distancia parezca pequeña.
-            </p>
-
-            <div class="heart">
-                ♥
-            </div>
-
-            <p class="signature">
-                Yousef &amp; Dacia
-            </p>
-
-        </div>
-
-    </section>
-
-
-</main>
-
-
-<!-- JavaScript -->
-<script src="js/main.js"></script>
-
-
-<!--
-====================================================
-TEST DIRECTO
-====================================================
-
-هذا الكود لا يعتمد على main.js.
-هو فقط يتأكد أن زر الانتقال يعمل.
--->
-
-<script>
-
-document.addEventListener("DOMContentLoaded", function () {
-
-    const button =
-        document.getElementById("startJourney");
-
-    const intro =
-        document.getElementById("intro");
-
-    const earth =
-        document.getElementById("earthScene");
-
-
-    if (!button) {
-
-        console.error(
-            "ERROR: startJourney button not found"
-        );
-
-        return;
-    }
-
-
-    button.addEventListener(
-        "click",
-        function () {
-
-            console.log(
-                "START BUTTON WORKS"
-            );
-
-
-            intro.classList.remove(
-                "active"
-            );
-
-
-            earth.classList.add(
-                "active"
-            );
-
-        }
-    );
-
-});
-
-</script>
-
+  <!-- Globe Container -->
+  <div id="cesiumContainer"></div>
+
+  <!-- Romantic UI Overlay -->
+  <div class="overlay-container">
+    <header class="header">
+      <h1 class="title">Entre Dos Mundos</h1>
+      <p class="subtitle">Egipto <span class="heart">♥</span> Honduras</p>
+    </header>
+
+    <div class="info-card">
+      <div class="distance-box">
+        <span class="label">Distancia actual:</span>
+        <span id="distanceValue" class="distance-number">Calculando...</span>
+      </div>
+
+      <div class="controls">
+        <button id="btnFly" class="btn-cinematic">
+          <svg class="icon" viewBox="0 0 24 24" width="20" height="20">
+            <path fill="currentColor" d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/>
+          </svg>
+          Mostrar el camino
+        </button>
+        
+        <button id="btnReset" class="btn-secondary">
+          Vista general
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CesiumJS Library -->
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.115/Build/Cesium/Cesium.js"></script>
+  
+  <!-- Main Application Script -->
+  <script src="js/main.js"></script>
 </body>
-
 </html>

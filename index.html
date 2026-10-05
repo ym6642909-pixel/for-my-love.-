@@ -2,52 +2,94 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Entre Dos Mundos</title>
   
-  <!-- CesiumJS CSS -->
-  <link href="https://cesium.com/downloads/cesiumjs/releases/1.115/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
   
-  <!-- Custom Styles -->
+  <!-- CSS Style -->
   <link rel="stylesheet" href="css/style.css">
+  
+  <!-- Three.js & Globe.gl via Reliable CDN -->
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/globe.gl@2.27.2/dist/globe.gl.min.js"></script>
 </head>
 <body>
 
-  <!-- Globe Container -->
-  <div id="cesiumContainer"></div>
-
-  <!-- Romantic UI Overlay -->
-  <div class="overlay-container">
-    <header class="header">
-      <h1 class="title">Entre Dos Mundos</h1>
-      <p class="subtitle">Egipto <span class="heart">♥</span> Honduras</p>
-    </header>
-
-    <div class="info-card">
-      <div class="distance-box">
-        <span class="label">Distancia actual:</span>
-        <span id="distanceValue" class="distance-number">Calculando...</span>
-      </div>
-
-      <div class="controls">
-        <button id="btnFly" class="btn-cinematic">
-          <svg class="icon" viewBox="0 0 24 24" width="20" height="20">
-            <path fill="currentColor" d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/>
-          </svg>
-          Mostrar el camino
-        </button>
-        
-        <button id="btnReset" class="btn-secondary">
-          Vista general
-        </button>
-      </div>
+  <!-- Loading Screen -->
+  <div id="loadingScreen" class="loading-screen">
+    <div class="loader-content">
+      <div class="spinner"></div>
+      <p id="loadingText" class="loading-text">Preparando nuestro mundo...</p>
     </div>
   </div>
 
-  <!-- CesiumJS Library -->
-  <script src="https://cesium.com/downloads/cesiumjs/releases/1.115/Build/Cesium/Cesium.js"></script>
-  
-  <!-- Main Application Script -->
+  <!-- WebGL Fallback Error Screen -->
+  <div id="errorScreen" class="error-screen hidden">
+    <div class="error-content">
+      <span class="error-icon">⚠️</span>
+      <h2>No se pudo cargar el mundo 3D</h2>
+      <p>Tu navegador o dispositivo no tiene habilitado el soporte para WebGL.</p>
+    </div>
+  </div>
+
+  <!-- 3D Globe Canvas Container -->
+  <div id="globeViz"></div>
+
+  <!-- Intro Scene Overlay -->
+  <div id="introScene" class="scene overlay-scene">
+    <div class="hero-card">
+      <h1 class="main-title">ENTRE DOS MUNDOS</h1>
+      <p class="subtitle-text">Dos países.<br>Un solo camino.</p>
+      <button id="btnDiscover" class="btn-primary">
+        Descubrir la distancia
+      </button>
+    </div>
+  </div>
+
+  <!-- Interactive Experience Overlay (Hidden initially) -->
+  <div id="mainExperienceUI" class="scene overlay-scene hidden">
+    <header class="top-bar">
+      <span class="brand">Entre Dos Mundos</span>
+      <div class="distance-badge">
+        <span class="dist-label">DISTANCIA</span>
+        <span id="distanceValue" class="dist-val">Calculando...</span>
+      </div>
+    </header>
+
+    <!-- Subtitle/Story Overlay for Camera Sequence -->
+    <div id="storyOverlay" class="story-container hidden">
+      <p id="storyText" class="story-text"></p>
+    </div>
+
+    <!-- Bottom Controls -->
+    <footer class="bottom-bar">
+      <button id="btnShowPath" class="btn-primary btn-glow">
+        Mostrar el camino
+      </button>
+      <button id="btnContinue" class="btn-secondary hidden">
+        Continuar
+      </button>
+    </footer>
+  </div>
+
+  <!-- Final Romantic Scene (Destination Container) -->
+  <div id="finalScene" class="scene overlay-scene hidden">
+    <div class="hero-card final-card">
+      <h2 class="final-title">Honduras ♥ Egipto</h2>
+      <p class="final-text">
+        "No importa la distancia que nos separe, siempre compartiremos el mismo cielo y el mismo mundo."
+      </p>
+      <button id="btnRestart" class="btn-secondary">
+        Volver al inicio
+      </button>
+    </div>
+  </div>
+
+  <!-- Main JavaScript Logic -->
   <script src="js/main.js"></script>
 </body>
 </html>

@@ -2,7 +2,6 @@
 <html lang="es">
 
 <head>
-
     <meta charset="UTF-8">
 
     <meta
@@ -10,64 +9,36 @@
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     >
 
-    <meta
-        name="theme-color"
-        content="#05070d"
-    >
-
-    <meta
-        name="mobile-web-app-capable"
-        content="yes"
-    >
-
-    <meta
-        name="apple-mobile-web-app-capable"
-        content="yes"
-    >
-
-    <meta
-        name="apple-mobile-web-app-status-bar-style"
-        content="black-translucent"
-    >
+    <meta name="theme-color" content="#02040a">
 
     <title>Entre Dos Mundos</title>
 
+    <!-- Three.js -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.min.js">
+    </script>
 
-    <!-- =================================================
-         LEAFLET CSS
-         ================================================= -->
+    <!-- Three.js OrbitControls -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/three@0.180.0/examples/js/controls/OrbitControls.js">
+    </script>
 
-    <link
-        rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    >
-
-
-    <!-- =================================================
-         PROJECT CSS
-         ================================================= -->
-
+    <!-- Project CSS -->
     <link
         rel="stylesheet"
         href="css/style.css"
     >
-
 </head>
 
 
 <body>
 
-
-    <!-- =================================================
-         APPLICATION
-         ================================================= -->
-
     <main id="app">
 
 
-        <!-- =================================================
+        <!-- ================================================
              SCENE 1 — INTRO
-             ================================================= -->
+             ================================================ -->
 
         <section
             id="intro"
@@ -80,17 +51,14 @@
                     ENTRE DOS MUNDOS
                 </p>
 
-
                 <h1>
                     Dos países.<br>
                     Un solo camino.
                 </h1>
 
-
                 <p class="intro-text">
                     Entre Egipto y Honduras hay un mundo entero.
                 </p>
-
 
                 <button
                     id="startJourney"
@@ -105,77 +73,58 @@
         </section>
 
 
-        <!-- =================================================
-             SCENE 2 — MAP
-             ================================================= -->
+        <!-- ================================================
+             SCENE 2 — 3D EARTH
+             ================================================ -->
 
         <section
-            id="mapScene"
+            id="earthScene"
             class="scene"
         >
 
-
-            <!-- =================================================
-                 REAL WORLD MAP
-                 ================================================= -->
-
-            <div id="map"></div>
+            <!-- Three.js Canvas -->
+            <div id="earth-container"></div>
 
 
-            <!-- =================================================
-                 MAP HEADER
-                 ================================================= -->
+            <!-- ============================================
+                 TOP INFORMATION
+                 ============================================ -->
 
-            <div class="map-header">
+            <div class="earth-header">
 
-
-                <!-- EGYPT -->
-
-                <div class="location-card">
-
-                    <span class="country-label">
-                        EGIPTO
-                    </span>
-
+                <div class="country">
+                    <span>EGIPTO</span>
                 </div>
 
 
-                <!-- DISTANCE -->
+                <div class="distance-box">
 
-                <div class="distance-container">
-
-                    <span>
+                    <small>
                         DISTANCIA
-                    </span>
+                    </small>
 
                     <strong id="distance">
-                        Calculando...
+                        0 km
                     </strong>
 
                 </div>
 
 
-                <!-- HONDURAS -->
-
-                <div class="location-card">
-
-                    <span class="country-label">
-                        HONDURAS
-                    </span>
-
+                <div class="country country-right">
+                    <span>HONDURAS</span>
                 </div>
 
             </div>
 
 
-            <!-- =================================================
-                 STORY PANEL
-                 ================================================= -->
+            <!-- ============================================
+                 STORY
+                 ============================================ -->
 
-            <div class="map-story">
+            <div class="earth-story">
 
                 <p id="storyText">
-                    Hay un mundo entero entre nosotros...
+                    Un mundo entero entre nosotros...
                 </p>
 
 
@@ -189,12 +138,30 @@
 
             </div>
 
+
+            <!-- ============================================
+                 LOADING
+                 ============================================ -->
+
+            <div
+                id="earthLoading"
+                class="earth-loading"
+            >
+
+                <div class="loading-spinner"></div>
+
+                <span>
+                    Preparando el mundo...
+                </span>
+
+            </div>
+
         </section>
 
 
-        <!-- =================================================
+        <!-- ================================================
              SCENE 3 — FINAL
-             ================================================= -->
+             ================================================ -->
 
         <section
             id="finalScene"
@@ -203,27 +170,22 @@
 
             <div class="final-content">
 
-
                 <p class="eyebrow">
                     ENTRE EGIPTO Y HONDURAS
                 </p>
-
 
                 <h2>
                     El mundo es enorme...
                 </h2>
 
-
                 <p>
-                    pero algunas personas hacen que
-                    la distancia parezca pequeña.
+                    pero algunas personas hacen
+                    que la distancia parezca pequeña.
                 </p>
-
 
                 <div class="heart">
                     ♥
                 </div>
-
 
                 <p class="signature">
                     Yousef &amp; Dacia
@@ -237,24 +199,9 @@
     </main>
 
 
-    <!-- =================================================
-         LEAFLET JS
-         ================================================= -->
-
-    <script
-        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    ></script>
-
-
-    <!-- =================================================
-         PROJECT JS
-         ================================================= -->
-
-    <script
-        src="js/main.js"
-    ></script>
-
+    <!-- Project JavaScript -->
+    <script src="js/main.js"></script>
 
 </body>
 
-    </html>
+</html>

@@ -1,5 +1,6 @@
 /* =========================================================
    ENTRE DOS MUNDOS
+   3D EARTH EXPERIENCE
    style.css
    ========================================================= */
 
@@ -19,7 +20,10 @@ html,
 body {
     width: 100%;
     height: 100%;
+
     overflow: hidden;
+
+    background: #02040a;
 }
 
 
@@ -33,13 +37,13 @@ body {
         Arial,
         sans-serif;
 
-    background: #05070d;
-
     color: #ffffff;
 
     -webkit-font-smoothing: antialiased;
 
     text-rendering: optimizeLegibility;
+
+    overscroll-behavior: none;
 }
 
 
@@ -57,7 +61,7 @@ body {
 
     overflow: hidden;
 
-    background: #05070d;
+    background: #02040a;
 }
 
 
@@ -79,11 +83,11 @@ body {
 
     pointer-events: none;
 
-    transition:
-        opacity 1s ease,
-        visibility 1s ease;
-
     overflow: hidden;
+
+    transition:
+        opacity 1.2s ease,
+        visibility 1.2s ease;
 }
 
 
@@ -99,7 +103,7 @@ body {
 
 
 /* =========================================================
-   INTRO SCENE
+   INTRO
    ========================================================= */
 
 #intro {
@@ -116,25 +120,21 @@ body {
     background:
         radial-gradient(
             circle at 50% 35%,
-            rgba(255, 255, 255, 0.08),
-            transparent 28%
+            rgba(100, 130, 255, 0.08),
+            transparent 25%
         ),
         radial-gradient(
             circle at 20% 80%,
-            rgba(130, 100, 255, 0.08),
+            rgba(80, 110, 255, 0.06),
             transparent 35%
         ),
         linear-gradient(
             180deg,
-            #070a13 0%,
-            #03050a 100%
+            #050811 0%,
+            #010208 100%
         );
 }
 
-
-/* =========================================================
-   STARS
-   ========================================================= */
 
 #intro::before {
     content: "";
@@ -152,10 +152,9 @@ body {
             transparent 1px
         );
 
-    background-size:
-        90px 90px;
+    background-size: 90px 90px;
 
-    opacity: 0.22;
+    opacity: 0.2;
 
     animation:
         starsMove 25s linear infinite;
@@ -174,16 +173,16 @@ body {
 }
 
 
-/* =========================================================
-   INTRO CONTENT
-   ========================================================= */
-
 .intro-content {
     position: relative;
 
     z-index: 2;
 
-    width: min(700px, 100%);
+    width:
+        min(
+            700px,
+            100%
+        );
 
     animation:
         introAppear 1.5s ease both;
@@ -210,6 +209,10 @@ body {
 }
 
 
+/* =========================================================
+   TEXT
+   ========================================================= */
+
 .eyebrow {
     margin-bottom: 18px;
 
@@ -221,7 +224,8 @@ body {
 
     text-transform: uppercase;
 
-    color: rgba(255, 255, 255, 0.55);
+    color:
+        rgba(255, 255, 255, 0.55);
 }
 
 
@@ -246,7 +250,8 @@ body {
 .intro-text {
     max-width: 520px;
 
-    margin: 0 auto 35px;
+    margin:
+        0 auto 35px;
 
     font-size:
         clamp(
@@ -257,7 +262,8 @@ body {
 
     line-height: 1.7;
 
-    color: rgba(255, 255, 255, 0.68);
+    color:
+        rgba(255, 255, 255, 0.68);
 }
 
 
@@ -268,7 +274,8 @@ body {
 .primary-button {
     appearance: none;
 
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    border: 1px solid
+        rgba(255, 255, 255, 0.25);
 
     outline: none;
 
@@ -307,7 +314,8 @@ body {
 
 
 .primary-button:hover {
-    transform: translateY(-2px);
+    transform:
+        translateY(-2px);
 
     background:
         rgba(255, 255, 255, 0.15);
@@ -319,32 +327,31 @@ body {
 
 .primary-button:active {
     transform:
-        translateY(0)
         scale(0.97);
 }
 
 
 .primary-button:disabled {
+    pointer-events: none;
+
     cursor: default;
-
-    pointer-events: none;
 }
 
 
 /* =========================================================
-   MAP SCENE
+   3D EARTH SCENE
    ========================================================= */
 
-#mapScene {
-    background: #111111;
+#earthScene {
+    background: #000000;
 }
 
 
 /* =========================================================
-   MAP
+   EARTH CONTAINER
    ========================================================= */
 
-#map {
+#earth-container {
     position: absolute;
 
     inset: 0;
@@ -352,375 +359,34 @@ body {
     width: 100%;
     height: 100%;
 
-    z-index: 1;
-
-    background: #101010;
-}
-
-
-/*
- * Slight cinematic layer above the map.
- */
-
-#map::after {
-    content: "";
-
-    position: absolute;
-
-    inset: 0;
-
-    pointer-events: none;
-
-    z-index: 400;
+    overflow: hidden;
 
     background:
-        linear-gradient(
-            180deg,
-            rgba(0, 0, 0, 0.40),
-            transparent 24%,
-            transparent 68%,
-            rgba(0, 0, 0, 0.55)
+        radial-gradient(
+            circle at center,
+            #08111f 0%,
+            #02050b 50%,
+            #000000 100%
         );
 }
 
 
-/* =========================================================
-   LEAFLET
-   ========================================================= */
+#earth-container canvas {
+    display: block;
 
-.leaflet-container {
-    width: 100%;
+    width: 100% !important;
 
-    height: 100%;
+    height: 100% !important;
 
-    background: #111111;
-
-    font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        Roboto,
-        Helvetica,
-        Arial,
-        sans-serif;
-}
-
-
-/*
- * Make map tiles slightly cinematic.
- */
-
-.leaflet-tile {
-    filter:
-        brightness(0.72)
-        contrast(1.05)
-        saturate(0.75);
+    outline: none;
 }
 
 
 /* =========================================================
-   LEAFLET CONTROLS
+   EARTH HEADER
    ========================================================= */
 
-.leaflet-control-zoom {
-    border: none !important;
-
-    margin-top: 95px !important;
-
-    margin-right: 12px !important;
-}
-
-
-.leaflet-control-zoom a {
-    width: 38px !important;
-
-    height: 38px !important;
-
-    line-height: 38px !important;
-
-    border: none !important;
-
-    color: #ffffff !important;
-
-    background:
-        rgba(10, 12, 18, 0.78) !important;
-
-    backdrop-filter:
-        blur(10px);
-
-    -webkit-backdrop-filter:
-        blur(10px);
-
-    transition:
-        background 0.2s ease;
-}
-
-
-.leaflet-control-zoom a:hover {
-    background:
-        rgba(30, 33, 42, 0.9) !important;
-}
-
-
-.leaflet-control-attribution {
-    padding:
-        3px 7px !important;
-
-    color:
-        rgba(255, 255, 255, 0.55) !important;
-
-    background:
-        rgba(0, 0, 0, 0.55) !important;
-
-    backdrop-filter:
-        blur(8px);
-}
-
-
-.leaflet-control-attribution a {
-    color:
-        rgba(255, 255, 255, 0.75) !important;
-}
-
-
-/* =========================================================
-   COUNTRY MARKERS
-   ========================================================= */
-
-.custom-country-marker {
-    background: transparent;
-
-    border: none;
-}
-
-
-.country-marker {
-    position: relative;
-
-    width: 24px;
-
-    height: 24px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-}
-
-
-.country-marker::before {
-    content: "";
-
-    position: absolute;
-
-    width: 24px;
-
-    height: 24px;
-
-    border-radius: 50%;
-
-    border:
-        1px solid
-        rgba(255, 255, 255, 0.55);
-
-    background:
-        rgba(255, 255, 255, 0.08);
-
-    animation:
-        markerPulse 2.2s ease-out infinite;
-}
-
-
-.country-marker span {
-    position: relative;
-
-    width: 9px;
-
-    height: 9px;
-
-    border-radius: 50%;
-
-    background: #ffffff;
-
-    box-shadow:
-        0 0 10px rgba(255, 255, 255, 0.9),
-        0 0 22px rgba(255, 255, 255, 0.55);
-}
-
-
-@keyframes markerPulse {
-
-    0% {
-        transform: scale(0.6);
-
-        opacity: 0.9;
-    }
-
-    70% {
-        transform: scale(1.8);
-
-        opacity: 0;
-    }
-
-    100% {
-        transform: scale(1.8);
-
-        opacity: 0;
-    }
-}
-
-
-/* =========================================================
-   COUNTRY TOOLTIP
-   ========================================================= */
-
-.country-tooltip {
-    border: 1px solid
-        rgba(255, 255, 255, 0.15) !important;
-
-    border-radius: 999px !important;
-
-    padding:
-        6px 11px !important;
-
-    color: #ffffff !important;
-
-    background:
-        rgba(8, 10, 16, 0.86) !important;
-
-    box-shadow:
-        0 8px 30px
-        rgba(0, 0, 0, 0.35) !important;
-
-    backdrop-filter:
-        blur(10px);
-
-    -webkit-backdrop-filter:
-        blur(10px);
-
-    font-size: 0.72rem !important;
-
-    font-weight: 600;
-
-    letter-spacing: 0.08em;
-}
-
-
-.country-tooltip::before {
-    border-top-color:
-        rgba(8, 10, 16, 0.86) !important;
-}
-
-
-/* =========================================================
-   ROUTE LINE
-   ========================================================= */
-
-.route-line {
-    filter:
-        drop-shadow(
-            0 0 5px
-            rgba(255, 255, 255, 0.65)
-        );
-
-    animation:
-        routeDash 1.5s linear infinite;
-}
-
-
-@keyframes routeDash {
-
-    from {
-        stroke-dashoffset: 0;
-    }
-
-    to {
-        stroke-dashoffset: -34;
-    }
-}
-
-
-/* =========================================================
-   MOVING POINT
-   ========================================================= */
-
-.moving-point-wrapper {
-    background: transparent;
-
-    border: none;
-}
-
-
-.moving-point {
-    position: relative;
-
-    width: 22px;
-
-    height: 22px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-}
-
-
-.moving-point::before {
-    content: "";
-
-    position: absolute;
-
-    inset: 0;
-
-    border-radius: 50%;
-
-    border:
-        1px solid
-        rgba(255, 255, 255, 0.7);
-
-    animation:
-        movingPulse 1.2s ease-out infinite;
-}
-
-
-.moving-point-core {
-    width: 8px;
-
-    height: 8px;
-
-    border-radius: 50%;
-
-    background: #ffffff;
-
-    box-shadow:
-        0 0 10px #ffffff,
-        0 0 25px rgba(255, 255, 255, 0.8);
-}
-
-
-@keyframes movingPulse {
-
-    0% {
-        transform: scale(0.5);
-
-        opacity: 1;
-    }
-
-    100% {
-        transform: scale(2);
-
-        opacity: 0;
-    }
-}
-
-
-/* =========================================================
-   MAP HEADER
-   ========================================================= */
-
-.map-header {
+.earth-header {
     position: absolute;
 
     top: 0;
@@ -729,7 +395,7 @@ body {
 
     right: 0;
 
-    z-index: 1000;
+    z-index: 50;
 
     display: grid;
 
@@ -748,22 +414,16 @@ body {
     background:
         linear-gradient(
             180deg,
-            rgba(0, 0, 0, 0.68),
+            rgba(0, 0, 0, 0.65),
             rgba(0, 0, 0, 0)
         );
 }
 
 
-/* =========================================================
-   LOCATION CARD
-   ========================================================= */
-
-.location-card {
+.country {
     display: flex;
 
     align-items: center;
-
-    gap: 7px;
 
     min-width: 0;
 
@@ -773,20 +433,16 @@ body {
 
     font-weight: 600;
 
-    letter-spacing: 0.12em;
+    letter-spacing: 0.13em;
 
     text-shadow:
-        0 2px 10px rgba(0, 0, 0, 0.7);
+        0 2px 12px
+        rgba(0, 0, 0, 0.8);
 }
 
 
-.location-card:last-child {
+.country-right {
     justify-content: flex-end;
-}
-
-
-.country-label {
-    white-space: nowrap;
 }
 
 
@@ -794,7 +450,7 @@ body {
    DISTANCE
    ========================================================= */
 
-.distance-container {
+.distance-box {
     min-width: 125px;
 
     padding:
@@ -809,24 +465,24 @@ body {
     text-align: center;
 
     background:
-        rgba(5, 7, 13, 0.64);
+        rgba(5, 7, 13, 0.65);
 
     backdrop-filter:
-        blur(14px);
+        blur(15px);
 
     -webkit-backdrop-filter:
-        blur(14px);
+        blur(15px);
 
     box-shadow:
         0 12px 40px
-        rgba(0, 0, 0, 0.25);
+        rgba(0, 0, 0, 0.35);
 }
 
 
-.distance-container span {
+.distance-box small {
     display: block;
 
-    margin-bottom: 3px;
+    margin-bottom: 4px;
 
     font-size: 0.55rem;
 
@@ -837,7 +493,7 @@ body {
 }
 
 
-.distance-container strong {
+.distance-box strong {
     display: block;
 
     font-size: 0.95rem;
@@ -849,17 +505,17 @@ body {
 
 
 /* =========================================================
-   MAP STORY PANEL
+   EARTH STORY
    ========================================================= */
 
-.map-story {
+.earth-story {
     position: absolute;
 
     left: 50%;
 
     bottom: 24px;
 
-    z-index: 1000;
+    z-index: 50;
 
     width:
         min(
@@ -882,7 +538,7 @@ body {
     border-radius: 24px;
 
     background:
-        rgba(5, 7, 13, 0.74);
+        rgba(4, 7, 13, 0.72);
 
     backdrop-filter:
         blur(18px);
@@ -892,7 +548,7 @@ body {
 
     box-shadow:
         0 18px 60px
-        rgba(0, 0, 0, 0.38);
+        rgba(0, 0, 0, 0.45);
 }
 
 
@@ -910,6 +566,90 @@ body {
 
     color:
         rgba(255, 255, 255, 0.88);
+}
+
+
+/* =========================================================
+   EARTH LOADING
+   ========================================================= */
+
+.earth-loading {
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 100;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 18px;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(5, 12, 25, 0.8),
+            rgba(0, 0, 0, 0.97)
+        );
+
+    transition:
+        opacity 0.8s ease,
+        visibility 0.8s ease;
+}
+
+
+.earth-loading.hidden {
+    opacity: 0;
+
+    visibility: hidden;
+
+    pointer-events: none;
+}
+
+
+.earth-loading span {
+    font-size: 0.78rem;
+
+    letter-spacing: 0.16em;
+
+    color:
+        rgba(255, 255, 255, 0.6);
+}
+
+
+/* =========================================================
+   LOADING SPINNER
+   ========================================================= */
+
+.loading-spinner {
+    width: 36px;
+
+    height: 36px;
+
+    border-radius: 50%;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.18);
+
+    border-top-color:
+        rgba(255, 255, 255, 0.9);
+
+    animation:
+        loadingSpin 0.9s linear infinite;
+}
+
+
+@keyframes loadingSpin {
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 
@@ -936,7 +676,7 @@ body {
         ),
         radial-gradient(
             circle at 50% 60%,
-            rgba(130, 100, 255, 0.08),
+            rgba(80, 110, 255, 0.08),
             transparent 38%
         ),
         linear-gradient(
@@ -1075,18 +815,18 @@ body {
 
 
 /* =========================================================
-   DESKTOP
+   TABLET / DESKTOP
    ========================================================= */
 
 @media (min-width: 768px) {
 
-    .map-header {
+    .earth-header {
         padding:
             25px 35px;
     }
 
 
-    .map-story {
+    .earth-story {
         bottom: 35px;
 
         padding:
@@ -1094,19 +834,12 @@ body {
     }
 
 
-    .leaflet-control-zoom {
-        margin-top: 110px !important;
-
-        margin-right: 20px !important;
-    }
-
-
-    .location-card {
+    .country {
         font-size: 0.8rem;
     }
 
 
-    .distance-container {
+    .distance-box {
         min-width: 150px;
 
         padding:
@@ -1114,7 +847,7 @@ body {
     }
 
 
-    .distance-container strong {
+    .distance-box strong {
         font-size: 1.05rem;
     }
 }
@@ -1126,13 +859,13 @@ body {
 
 @media (min-width: 1200px) {
 
-    .map-header {
+    .earth-header {
         padding:
             30px 55px;
     }
 
 
-    .map-story {
+    .earth-story {
         bottom: 45px;
     }
 }
@@ -1164,20 +897,20 @@ body {
     }
 
 
-    .map-header {
+    .earth-header {
         padding:
             18px 10px;
     }
 
 
-    .location-card {
-        font-size: 0.6rem;
+    .country {
+        font-size: 0.59rem;
 
         letter-spacing: 0.06em;
     }
 
 
-    .distance-container {
+    .distance-box {
         min-width: 105px;
 
         padding:
@@ -1187,17 +920,17 @@ body {
     }
 
 
-    .distance-container strong {
+    .distance-box strong {
         font-size: 0.78rem;
     }
 
 
-    .distance-container span {
+    .distance-box small {
         font-size: 0.48rem;
     }
 
 
-    .map-story {
+    .earth-story {
         bottom: 12px;
 
         width:
@@ -1217,7 +950,7 @@ body {
     }
 
 
-    .map-story .primary-button {
+    .earth-story .primary-button {
         min-height: 43px;
 
         padding:
@@ -1240,8 +973,6 @@ body {
         animation-duration: 0.01ms !important;
 
         animation-iteration-count: 1 !important;
-
-        scroll-behavior: auto !important;
 
         transition-duration: 0.01ms !important;
     }

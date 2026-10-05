@@ -13,165 +13,240 @@
 
     <title>Entre Dos Mundos</title>
 
-    <!-- Three.js فقط -->
+    <!-- Three.js -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.min.js"></script>
 
     <!-- CSS -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 
+
 <body>
 
-    <main id="app">
-
-        <!-- =========================
-             SCENE 1 — INTRO
-             ========================= -->
-
-        <section
-            id="intro"
-            class="scene active"
-        >
-
-            <div class="intro-content">
-
-                <p class="eyebrow">
-                    ENTRE DOS MUNDOS
-                </p>
-
-                <h1>
-                    Dos países.<br>
-                    Un solo camino.
-                </h1>
-
-                <p class="intro-text">
-                    Entre Egipto y Honduras hay un mundo entero.
-                </p>
-
-                <button
-                    id="startJourney"
-                    class="primary-button"
-                    type="button"
-                >
-                    Descubrir la distancia
-                </button>
-
-            </div>
-
-        </section>
+<main id="app">
 
 
-        <!-- =========================
-             SCENE 2 — EARTH
-             ========================= -->
+    <!-- =========================================
+         SCENE 1
+         ========================================= -->
 
-        <section
-            id="earthScene"
-            class="scene"
-        >
+    <section
+        id="intro"
+        class="scene active"
+    >
 
-            <div id="earth-container"></div>
+        <div class="intro-content">
 
+            <p class="eyebrow">
+                ENTRE DOS MUNDOS
+            </p>
 
-            <div class="earth-header">
+            <h1>
+                Dos países.<br>
+                Un solo camino.
+            </h1>
 
-                <div class="country">
-                    <span>EGIPTO</span>
-                </div>
+            <p class="intro-text">
+                Entre Egipto y Honduras hay un mundo entero.
+            </p>
 
-                <div class="distance-box">
+            <!--
+                IMPORTANT:
+                El cambio de escena está directamente
+                en el botón.
+            -->
 
-                    <small>
-                        DISTANCIA
-                    </small>
-
-                    <strong id="distance">
-                        0 km
-                    </strong>
-
-                </div>
-
-                <div class="country country-right">
-                    <span>HONDURAS</span>
-                </div>
-
-            </div>
-
-
-            <div class="earth-story">
-
-                <p id="storyText">
-                    Un mundo entero entre nosotros...
-                </p>
-
-                <button
-                    id="travelButton"
-                    class="primary-button"
-                    type="button"
-                >
-                    Mostrar el camino
-                </button>
-
-            </div>
-
-
-            <div
-                id="earthLoading"
-                class="earth-loading"
+            <button
+                id="startJourney"
+                class="primary-button"
+                type="button"
+                onclick="
+                    document.getElementById('intro').classList.remove('active');
+                    document.getElementById('earthScene').classList.add('active');
+                "
             >
+                Descubrir la distancia
+            </button>
 
-                <div class="loading-spinner"></div>
+        </div>
 
-                <span>
-                    Preparando el mundo...
-                </span>
+    </section>
+
+
+    <!-- =========================================
+         SCENE 2
+         ========================================= -->
+
+    <section
+        id="earthScene"
+        class="scene"
+    >
+
+        <div id="earth-container"></div>
+
+
+        <div class="earth-header">
+
+            <div class="country">
+                <span>EGIPTO</span>
+            </div>
+
+
+            <div class="distance-box">
+
+                <small>
+                    DISTANCIA
+                </small>
+
+                <strong id="distance">
+                    0 km
+                </strong>
 
             </div>
 
-        </section>
+
+            <div class="country country-right">
+                <span>HONDURAS</span>
+            </div>
+
+        </div>
 
 
-        <!-- =========================
-             SCENE 3 — FINAL
-             ========================= -->
+        <div class="earth-story">
 
-        <section
-            id="finalScene"
-            class="scene"
+            <p id="storyText">
+                Un mundo entero entre nosotros...
+            </p>
+
+
+            <button
+                id="travelButton"
+                class="primary-button"
+                type="button"
+            >
+                Mostrar el camino
+            </button>
+
+        </div>
+
+
+        <div
+            id="earthLoading"
+            class="earth-loading"
         >
 
-            <div class="final-content">
+            <div class="loading-spinner"></div>
 
-                <p class="eyebrow">
-                    ENTRE EGIPTO Y HONDURAS
-                </p>
+            <span>
+                Preparando el mundo...
+            </span>
 
-                <h2>
-                    El mundo es enorme...
-                </h2>
+        </div>
 
-                <p>
-                    pero algunas personas hacen
-                    que la distancia parezca pequeña.
-                </p>
+    </section>
 
-                <div class="heart">
-                    ♥
-                </div>
 
-                <p class="signature">
-                    Yousef &amp; Dacia
-                </p>
+    <!-- =========================================
+         SCENE 3
+         ========================================= -->
 
+    <section
+        id="finalScene"
+        class="scene"
+    >
+
+        <div class="final-content">
+
+            <p class="eyebrow">
+                ENTRE EGIPTO Y HONDURAS
+            </p>
+
+            <h2>
+                El mundo es enorme...
+            </h2>
+
+            <p>
+                pero algunas personas hacen
+                que la distancia parezca pequeña.
+            </p>
+
+            <div class="heart">
+                ♥
             </div>
 
-        </section>
+            <p class="signature">
+                Yousef &amp; Dacia
+            </p>
 
-    </main>
+        </div>
+
+    </section>
 
 
-    <!-- JavaScript -->
-    <script src="js/main.js"></script>
+</main>
+
+
+<!-- JavaScript -->
+<script src="js/main.js"></script>
+
+
+<!--
+====================================================
+TEST DIRECTO
+====================================================
+
+هذا الكود لا يعتمد على main.js.
+هو فقط يتأكد أن زر الانتقال يعمل.
+-->
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const button =
+        document.getElementById("startJourney");
+
+    const intro =
+        document.getElementById("intro");
+
+    const earth =
+        document.getElementById("earthScene");
+
+
+    if (!button) {
+
+        console.error(
+            "ERROR: startJourney button not found"
+        );
+
+        return;
+    }
+
+
+    button.addEventListener(
+        "click",
+        function () {
+
+            console.log(
+                "START BUTTON WORKS"
+            );
+
+
+            intro.classList.remove(
+                "active"
+            );
+
+
+            earth.classList.add(
+                "active"
+            );
+
+        }
+    );
+
+});
+
+</script>
 
 </body>
 

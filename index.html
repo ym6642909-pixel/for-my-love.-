@@ -3,103 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cairo & Tegucigalpa — A Connection Across Oceans</title>
+    <title>Cairo & Tegucigalpa</title>
     
-    <!-- CSS Files -->
     <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/animation.css">
     
-    <!-- Premium Fonts -->
+    <!-- Google Fonts: Elegant Serif & Clean Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <!-- Subtle Ambient Background Glows -->
-    <div class="ambient-glow glow-1"></div>
-    <div class="ambient-glow glow-2"></div>
-    <div id="stars-container"></div>
+    <!-- Floating Language Toggle -->
+    <button id="lang-btn" class="lang-switch" onclick="toggleLanguage()">
+        <span class="lang-text">Español / عربي</span>
+    </button>
 
-    <!-- Floating Glass Header Controls -->
-    <nav class="top-nav">
-        <div class="nav-brand">CAI <span class="connector">✦</span> TGU</div>
-        <button id="lang-btn" class="lang-switch-btn" onclick="toggleLanguage()">
-            <span class="lang-code">ES</span> / <span class="lang-code">AR</span>
-        </button>
-    </nav>
-
-    <div class="container">
+    <div class="main-wrapper">
         <!-- Hero Section -->
-        <header class="hero-section">
-            <div class="pill-tag" data-i18n="hero-tag">12,600 KM • TWO CONTINENTS</div>
-            <h1 data-i18n="title">Across Time & Distance</h1>
-            <p class="subtitle" data-i18n="subtitle">Different timezones, one shared skyline.</p>
+        <header class="header-section">
+            <span class="small-tag" data-i18n="tag">12,600 KM</span>
+            <h1 data-i18n="title">Entre El Cairo y Tegucigalpa</h1>
+            <p class="sub-title" data-i18n="subtitle">Dos lugares, un mismo sentimiento.</p>
             
-            <!-- Sleek Modern Clocks -->
-            <div class="clocks-wrapper">
-                <div class="clock-card">
-                    <div class="location-header">
-                        <span class="city-name">Cairo</span>
-                        <span class="country-code">EG</span>
-                    </div>
-                    <div id="cairo-clock" class="time">00:00:00</div>
-                    <span class="time-label" data-i18n="cairo-label">Local Time</span>
+            <!-- Live Time Display -->
+            <div class="time-container">
+                <div class="time-box">
+                    <span class="city-label" data-i18n="cairo-city">El Cairo</span>
+                    <span id="cairo-clock" class="clock-digits">00:00</span>
                 </div>
-
-                <div class="clock-divider">
-                    <div class="pulse-line"></div>
-                </div>
-
-                <div class="clock-card">
-                    <div class="location-header">
-                        <span class="city-name">Tegucigalpa</span>
-                        <span class="country-code">HN</span>
-                    </div>
-                    <div id="tegu-clock" class="time">00:00:00</div>
-                    <span class="time-label" data-i18n="tegu-label">Local Time</span>
+                <div class="time-separator">•</div>
+                <div class="time-box">
+                    <span class="city-label" data-i18n="tegu-city">Tegucigalpa</span>
+                    <span id="tegu-clock" class="clock-digits">00:00</span>
                 </div>
             </div>
         </header>
 
-        <!-- Main Cards Section -->
-        <main class="content-section">
-            <section class="cards-grid">
-                <div class="glass-card">
-                    <div class="card-num">01</div>
-                    <h3 data-i18n="card1-title">Parallel Horizons</h3>
-                    <p data-i18n="card1-desc">When the sun rises over the Nile, the night settles quietly over Honduran mountains.</p>
-                </div>
-
-                <div class="glass-card">
-                    <div class="card-num">02</div>
-                    <h3 data-i18n="card2-title">Shared Language</h3>
-                    <p data-i18n="card2-desc">Building a unique vocabulary between Egyptian warmth and Honduran grace.</p>
-                </div>
-
-                <div class="glass-card">
-                    <div class="card-num">03</div>
-                    <h3 data-i18n="card3-title">The First Meeting</h3>
-                    <p data-i18n="card3-desc">An unspoken promise for a cup of Honduran coffee shared face to face.</p>
-                </div>
-            </section>
-
-            <!-- Modern Interactive Card Reveal (Replaces the childish envelope) -->
-            <section class="revelation-section">
-                <div class="interactive-ticket" onclick="openLetter()">
-                    <div class="ticket-glow"></div>
-                    <div class="ticket-header">
-                        <span class="ticket-title" data-i18n="ticket-title">A PRIVATE NOTE</span>
-                        <span class="ticket-status" data-i18n="ticket-status">TAP TO READ</span>
+        <!-- Interactive Flip / Tap Story Cards -->
+        <main class="cards-container">
+            <div class="story-card" onclick="this.classList.toggle('flipped')">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <span class="card-icon">☕</span>
+                        <h3 data-i18n="card1-front-title">Un pensamiento</h3>
+                        <span class="tap-hint" data-i18n="tap-hint">Haz clic</span>
                     </div>
-                    <div class="ticket-content">
-                        <p id="letter-content" class="letter-text" data-i18n="letter-body">
-                            Although oceans separate us today, every conversation has narrowed the distance. This page is a small reminder that no matter the physical miles, my thoughts naturally gravitate toward you.
-                        </p>
+                    <div class="card-back">
+                        <p data-i18n="card1-back-text">Un día compartiremos un café real, sin pantallas de por medio.</p>
                     </div>
                 </div>
-            </section>
+            </div>
+
+            <div class="story-card" onclick="this.classList.toggle('flipped')">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <span class="card-icon">🌙</span>
+                        <h3 data-i18n="card2-front-title">El tiempo</h3>
+                        <span class="tap-hint" data-i18n="tap-hint">Haz clic</span>
+                    </div>
+                    <div class="card-back">
+                        <p data-i18n="card2-back-text">Las horas de diferencia no cambian la cercanía de nuestras conversaciones.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="story-card" onclick="this.classList.toggle('flipped')">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <span class="card-icon">✨</span>
+                        <h3 data-i18n="card3-front-title">Lo que viene</h3>
+                        <span class="tap-hint" data-i18n="tap-hint">Haz clic</span>
+                    </div>
+                    <div class="card-back">
+                        <p data-i18n="card3-back-text">Aún no tenemos fotos juntos, pero tenemos historias por escribir.</p>
+                    </div>
+                </div>
+            </div>
         </main>
+
+        <!-- Note Section -->
+        <section class="note-section">
+            <div class="note-paper">
+                <p id="letter-content" data-i18n="letter-text">
+                    Esta página es solo un pequeño detalle para recordarte que la distancia es solo geográfica. Gracias por cada momento y por estar presente a pesar de los kilómetros.
+                </p>
+                <span class="note-signature" data-i18n="signature">Con cariño 🌸</span>
+            </div>
+        </section>
     </div>
 
     <!-- JavaScript Files -->

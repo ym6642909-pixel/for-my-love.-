@@ -1,266 +1,398 @@
 /* =========================================================
    ENTRE DOS MUNDOS
-   Interactive World Map
-========================================================= */
+   main.js
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    /* =====================================================
+       ELEMENTS
+       ===================================================== */
+
+    const introScene = document.getElementById("intro");
+    const mapScene = document.getElementById("mapScene");
+    const finalScene = document.getElementById("finalScene");
+
+    const startJourneyButton = document.getElementById("startJourney");
+    const travelButton = document.getElementById("travelButton");
+
+    const distanceElement = document.getElementById("distance");
+    const storyText = document.getElementById("storyText");
 
 
-/* =========================================================
-   1. ELEMENTS
-========================================================= */
+    /* =====================================================
+       LOCATIONS
+       ===================================================== */
 
-const introScene = document.getElementById("intro");
-const mapScene = document.getElementById("mapScene");
-const finalScene = document.getElementById("finalScene");
+    // Punto representativo de Egipto
+    const egypt = {
+        name: "Egipto",
+        lat: 26.8206,
+        lng: 30.8025
+    };
 
-const startJourneyButton =
-    document.getElementById("startJourney");
-
-const travelButton =
-    document.getElementById("travelButton");
-
-const distanceElement =
-    document.getElementById("distance");
-
-const storyText =
-    document.getElementById("storyText");
+    // Punto representativo de Honduras
+    const honduras = {
+        name: "Honduras",
+        lat: 14.0723,
+        lng: -86.2419
+    };
 
 
-/* =========================================================
-   2. LOCATIONS
-========================================================= */
+    /* =====================================================
+       VARIABLES
+       ===================================================== */
 
-/*
-    Cairo, Egypt
-    Tegucigalpa, Honduras
+    let map = null;
 
-    These coordinates are used as representative
-    points for the two countries.
-*/
+    let egyptMarker = null;
+    let hondurasMarker = null;
 
-const egypt = {
-    name: "Egipto",
-    lat: 30.0444,
-    lng: 31.2357
-};
+    let routeLine = null;
+    let movingPoint = null;
 
-const honduras = {
-    name: "Honduras",
-    lat: 14.0723,
-    lng: -87.1921
-};
+    let journeyStarted = false;
+    let animationFrame = null;
+
+    let routePoints = [];
+
+    let totalDistance = 0;
 
 
-/* =========================================================
-   3. STATE
-========================================================= */
+    /* =====================================================
+       SCENE CONTROL
+       ===================================================== */
 
-let map = null;
+    function showScene(scene) {
 
-let egyptMarker = null;
-let hondurasMarker = null;
+        if (!scene) return;
 
-let routeLine = null;
-
-let journeyStarted = false;
-
-let journeyAnimation = null;
-
-
-/* =========================================================
-   4. SCENE CONTROL
-========================================================= */
-
-function showScene(scene) {
-
-    document
-        .querySelectorAll(".scene")
-        .forEach(currentScene => {
-
+        document.querySelectorAll(".scene").forEach((currentScene) => {
             currentScene.classList.remove("active");
-
         });
 
-    scene.classList.add("active");
-}
-
-
-/* =========================================================
-   5. HAVERSINE DISTANCE
-========================================================= */
-
-function calculateDistance(lat1, lon1, lat2, lon2) {
-
-    const earthRadius = 6371;
-
-    const degreesToRadians =
-        Math.PI / 180;
-
-    const dLat =
-        (lat2 - lat1) * degreesToRadians;
-
-    const dLon =
-        (lon2 - lon1) * degreesToRadians;
-
-    const latitude1 =
-        lat1 * degreesToRadians;
-
-    const latitude2 =
-        lat2 * degreesToRadians;
-
-    const a =
-        Math.sin(dLat / 2) *
-        Math.sin(dLat / 2) +
-
-        Math.cos(latitude1) *
-        Math.cos(latitude2) *
-
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-
-    const c =
-        2 *
-        Math.atan2(
-            Math.sqrt(a),
-            Math.sqrt(1 - a)
-        );
-
-    return earthRadius * c;
-}
-
-
-/* =========================================================
-   6. FORMAT DISTANCE
-========================================================= */
-
-function formatDistance(distance) {
-
-    return Math.round(distance)
-        .toLocaleString("en-US") + " km";
-}
-
-
-/* =========================================================
-   7. CREATE MAP
-========================================================= */
-
-function createMap() {
-
-    if (map) {
-        return;
+        scene.classList.add("active");
     }
 
 
-    /* -----------------------------------------
-       Create Leaflet map
-    ----------------------------------------- */
+    /* =====================================================
+       DISTANCE CALCULATION
+       HAVERSINE FORMULA
+       ===================================================== */
 
-    map = L.map("map", {
+    function calculateDistance(lat1, lon1, lat2, lon2) {
 
-        zoomControl: true,
+        const earthRadius = 6371;
 
-        minZoom: 2,
+        const toRadians = (degrees) => {
+            return degrees * Math.PI / 180;
+        };
 
-        maxZoom: 7,
+        const latitude1 = toRadians(lat1);
+        const latitude2 = toRadians(lat2);
 
-        worldCopyJump: false,
+        const deltaLatitude = toRadians(lat2 - lat1);
+        const deltaLongitude = toRadians(lon2 - lon1);
 
-        attributionControl: true
+        const a =
+            Math.sin(deltaLatitude / 2) ** 2 +
+            Math.cos(latitude1) *
+            Math.cos(latitude2) *
+            Math.sin(deltaLongitude / 2) ** 2;
 
-    });
+        const c =
+            2 *
+            Math.atan2(
+                Math.sqrt(a),
+                Math.sqrt(1 - a)
+            );
+
+        return earthRadius * c;
+    }
 
 
-    /* -----------------------------------------
-       OpenStreetMap tiles
-    ----------------------------------------- */
+    /* =====================================================
+       DISTANCE FORMAT
+       ===================================================== */
 
-    L.tileLayer(
-        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        {
-            maxZoom: 19,
+    function formatDistance(distance) {
 
-            attribution:
-                '&copy; OpenStreetMap contributors'
+        return Math.round(distance).toLocaleString("es-ES") + " km";
+    }
+
+
+    /* =====================================================
+       GREAT CIRCLE ROUTE
+       ===================================================== */
+
+    function createGreatCircleRoute(start, end, steps = 180) {
+
+        const points = [];
+
+        const lat1 = start.lat * Math.PI / 180;
+        const lon1 = start.lng * Math.PI / 180;
+
+        const lat2 = end.lat * Math.PI / 180;
+        const lon2 = end.lng * Math.PI / 180;
+
+
+        /*
+         * Convert geographic coordinates
+         * into 3D Cartesian coordinates.
+         */
+
+        const x1 = Math.cos(lat1) * Math.cos(lon1);
+        const y1 = Math.cos(lat1) * Math.sin(lon1);
+        const z1 = Math.sin(lat1);
+
+        const x2 = Math.cos(lat2) * Math.cos(lon2);
+        const y2 = Math.cos(lat2) * Math.sin(lon2);
+        const z2 = Math.sin(lat2);
+
+
+        /*
+         * Angular distance between the two points.
+         */
+
+        const dot =
+            x1 * x2 +
+            y1 * y2 +
+            z1 * z2;
+
+        const clampedDot = Math.max(
+            -1,
+            Math.min(1, dot)
+        );
+
+        const angle = Math.acos(clampedDot);
+
+
+        /*
+         * If both points are almost identical,
+         * return a simple line.
+         */
+
+        if (angle < 0.000001) {
+
+            for (let i = 0; i <= steps; i++) {
+
+                const progress = i / steps;
+
+                const lat =
+                    start.lat +
+                    (end.lat - start.lat) * progress;
+
+                const lng =
+                    start.lng +
+                    (end.lng - start.lng) * progress;
+
+                points.push([lat, lng]);
+            }
+
+            return points;
         }
-    ).addTo(map);
 
 
-    /* -----------------------------------------
-       Initial world view
-    ----------------------------------------- */
-
-    map.setView(
-        [22, -20],
-        2
-    );
+        const sinAngle = Math.sin(angle);
 
 
-    /* -----------------------------------------
-       Custom marker icons
-    ----------------------------------------- */
+        /*
+         * Spherical Linear Interpolation
+         * creates a real great-circle path.
+         */
 
-    const markerIcon =
-        L.divIcon({
+        for (let i = 0; i <= steps; i++) {
 
-            className: "",
+            const progress = i / steps;
 
-            html:
-                '<div class="country-marker"></div>',
+            const a =
+                Math.sin((1 - progress) * angle) /
+                sinAngle;
 
-            iconSize: [18, 18],
+            const b =
+                Math.sin(progress * angle) /
+                sinAngle;
 
-            iconAnchor: [9, 9]
 
+            const x =
+                a * x1 +
+                b * x2;
+
+            const y =
+                a * y1 +
+                b * y2;
+
+            const z =
+                a * z1 +
+                b * z2;
+
+
+            const latitude =
+                Math.atan2(
+                    z,
+                    Math.sqrt(x * x + y * y)
+                );
+
+            const longitude =
+                Math.atan2(y, x);
+
+
+            points.push([
+                latitude * 180 / Math.PI,
+                longitude * 180 / Math.PI
+            ]);
+        }
+
+        return points;
+    }
+
+
+    /* =====================================================
+       CREATE CUSTOM MARKER
+       ===================================================== */
+
+    function createMarkerIcon() {
+
+        return L.divIcon({
+
+            className: "custom-country-marker",
+
+            html: `
+                <div class="country-marker">
+                    <span></span>
+                </div>
+            `,
+
+            iconSize: [24, 24],
+
+            iconAnchor: [12, 12]
+        });
+    }
+
+
+    /* =====================================================
+       CREATE MAP
+       ===================================================== */
+
+    function createMap() {
+
+        if (map) {
+
+            setTimeout(() => {
+                map.invalidateSize(true);
+            }, 300);
+
+            return;
+        }
+
+
+        /*
+         * Create Leaflet map.
+         */
+
+        map = L.map("map", {
+
+            zoomControl: true,
+
+            minZoom: 2,
+
+            maxZoom: 7,
+
+            worldCopyJump: false,
+
+            attributionControl: true,
+
+            zoomSnap: 0.5,
+
+            zoomDelta: 0.5
         });
 
 
-    /* -----------------------------------------
-       Egypt marker
-    ----------------------------------------- */
+        /* =================================================
+           OPENSTREETMAP
+           ================================================= */
 
-    egyptMarker =
-        L.marker(
+        L.tileLayer(
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            {
+                maxZoom: 19,
+
+                attribution:
+                    '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'
+            }
+        ).addTo(map);
+
+
+        /* =================================================
+           INITIAL VIEW
+           ================================================= */
+
+        map.setView(
+            [22, -25],
+            2
+        );
+
+
+        /* =================================================
+           MARKER ICON
+           ================================================= */
+
+        const markerIcon = createMarkerIcon();
+
+
+        /* =================================================
+           EGYPT MARKER
+           ================================================= */
+
+        egyptMarker = L.marker(
             [egypt.lat, egypt.lng],
             {
-                icon: markerIcon
+                icon: markerIcon,
+
+                keyboard: false
             }
         )
         .addTo(map)
         .bindTooltip(
             "Egipto",
             {
-                permanent: false,
-                direction: "top"
+                permanent: true,
+                direction: "top",
+                offset: [0, -10],
+                className: "country-tooltip"
             }
         );
 
 
-    /* -----------------------------------------
-       Honduras marker
-    ----------------------------------------- */
+        /* =================================================
+           HONDURAS MARKER
+           ================================================= */
 
-    hondurasMarker =
-        L.marker(
+        hondurasMarker = L.marker(
             [honduras.lat, honduras.lng],
             {
-                icon: markerIcon
+                icon: markerIcon,
+
+                keyboard: false
             }
         )
         .addTo(map)
         .bindTooltip(
             "Honduras",
             {
-                permanent: false,
-                direction: "top"
+                permanent: true,
+                direction: "top",
+                offset: [0, -10],
+                className: "country-tooltip"
             }
         );
 
 
-    /* -----------------------------------------
-       Calculate real geographic distance
-    ----------------------------------------- */
+        /* =================================================
+           DISTANCE
+           ================================================= */
 
-    const distance =
-        calculateDistance(
+        totalDistance = calculateDistance(
             egypt.lat,
             egypt.lng,
             honduras.lat,
@@ -268,197 +400,181 @@ function createMap() {
         );
 
 
-    distanceElement.textContent =
-        formatDistance(distance);
+        if (distanceElement) {
+
+            distanceElement.textContent =
+                formatDistance(totalDistance);
+        }
 
 
-    /* -----------------------------------------
-       Create initial route
-    ----------------------------------------- */
+        /* =================================================
+           GREAT CIRCLE ROUTE
+           ================================================= */
 
-    routeLine =
-        L.polyline(
-            [
-                [egypt.lat, egypt.lng],
-                [honduras.lat, honduras.lng]
-            ],
+        routePoints = createGreatCircleRoute(
+            egypt,
+            honduras,
+            220
+        );
+
+
+        /*
+         * IMPORTANT:
+         * Start with an empty line.
+         * It will be drawn only when the journey begins.
+         */
+
+        routeLine = L.polyline(
+            [],
             {
                 color: "#ffffff",
 
-                weight: 2,
+                weight: 2.5,
 
-                opacity: 0.75,
+                opacity: 0.9,
 
-                dashArray: "8 10",
+                dashArray: "7 10",
+
+                lineCap: "round",
+
+                lineJoin: "round",
 
                 className: "route-line"
             }
-        )
-        .addTo(map);
+        ).addTo(map);
 
 
-    /*
-        Initially show the whole world.
-    */
+        /* =================================================
+           MOVING POINT
+           ================================================= */
 
-    setTimeout(() => {
+        const movingIcon = L.divIcon({
 
-        map.invalidateSize();
+            className: "moving-point-wrapper",
 
-    }, 300);
-}
+            html: `
+                <div class="moving-point">
+                    <div class="moving-point-core"></div>
+                </div>
+            `,
+
+            iconSize: [22, 22],
+
+            iconAnchor: [11, 11]
+        });
 
 
-/* =========================================================
-   8. START EXPERIENCE
-========================================================= */
+        movingPoint = L.marker(
+            [egypt.lat, egypt.lng],
+            {
+                icon: movingIcon,
 
-startJourneyButton.addEventListener(
-    "click",
-    () => {
+                opacity: 0
+            }
+        ).addTo(map);
 
-        showScene(mapScene);
 
-        createMap();
+        /* =================================================
+           MAP READY
+           ================================================= */
 
         setTimeout(() => {
 
-            map.invalidateSize();
+            if (map) {
+
+                map.invalidateSize(true);
+            }
 
         }, 500);
-
     }
-);
 
 
-/* =========================================================
-   9. BUILD A CURVED ROUTE
-========================================================= */
+    /* =====================================================
+       ANIMATE ROUTE
+       ===================================================== */
 
-function createCurvedRoute() {
+    function animateRoute() {
 
-    /*
-        Instead of using only two points,
-        create intermediate points.
-
-        This gives the journey a cinematic
-        flight-route appearance.
-    */
-
-    const points = [];
-
-    const startLat = egypt.lat;
-    const startLng = egypt.lng;
-
-    const endLat = honduras.lat;
-    const endLng = honduras.lng;
-
-
-    const numberOfPoints = 100;
-
-
-    for (
-        let i = 0;
-        i <= numberOfPoints;
-        i++
-    ) {
-
-        const progress =
-            i / numberOfPoints;
+        if (!map || !routeLine || !routePoints.length) {
+            return;
+        }
 
 
         /*
-            Linear interpolation
-        */
+         * Cancel previous animation.
+         */
 
-        const lat =
-            startLat +
-            (endLat - startLat) *
-            progress;
+        if (animationFrame) {
 
+            cancelAnimationFrame(animationFrame);
 
-        const lng =
-            startLng +
-            (endLng - startLng) *
-            progress;
+            animationFrame = null;
+        }
 
 
-        /*
-            Arc height
+        let progress = 0;
 
-            Makes the line slightly curved
-            instead of completely straight.
-        */
+        const duration = 9000;
 
-        const arc =
-            Math.sin(
-                progress * Math.PI
-            ) * 12;
+        const startTime = performance.now();
 
 
-        points.push([
-            lat + arc,
-            lng
-        ]);
-    }
+        routeLine.setLatLngs([]);
+
+        routeLine.setStyle({
+            opacity: 0.9
+        });
 
 
-    return points;
-}
+        if (movingPoint) {
+
+            movingPoint.setOpacity(1);
+
+            movingPoint.setLatLng(
+                routePoints[0]
+            );
+        }
 
 
-/* =========================================================
-   10. ANIMATE ROUTE
-========================================================= */
+        function animate(currentTime) {
 
-function animateRoute() {
+            const elapsed =
+                currentTime - startTime;
 
-    if (!routeLine) {
-        return;
-    }
-
-
-    const points =
-        createCurvedRoute();
-
-
-    routeLine.setLatLngs([]);
-
-
-    let currentPoint = 0;
-
-
-    /*
-        Animation speed
-    */
-
-    const speed = 12;
-
-
-    journeyAnimation =
-        setInterval(() => {
-
-            if (
-                currentPoint >=
-                points.length
-            ) {
-
-                clearInterval(
-                    journeyAnimation
+            progress =
+                Math.min(
+                    elapsed / duration,
+                    1
                 );
 
-                journeyAnimation = null;
 
-                finishJourney();
+            /*
+             * Ease in/out
+             */
 
-                return;
-            }
+            const easedProgress =
+                progress < 0.5
+
+                    ? 2 * progress * progress
+
+                    : 1 -
+                      Math.pow(
+                          -2 * progress + 2,
+                          2
+                      ) / 2;
+
+
+            const currentIndex =
+                Math.floor(
+                    easedProgress *
+                    (routePoints.length - 1)
+                );
 
 
             const visiblePoints =
-                points.slice(
+                routePoints.slice(
                     0,
-                    currentPoint + 1
+                    currentIndex + 1
                 );
 
 
@@ -467,192 +583,331 @@ function animateRoute() {
             );
 
 
-            /*
-                Follow the route
-            */
+            if (movingPoint && visiblePoints.length) {
 
-            if (
-                currentPoint % 4 === 0 &&
-                map
-            ) {
+                const currentPosition =
+                    visiblePoints[
+                        visiblePoints.length - 1
+                    ];
 
-                const point =
-                    points[currentPoint];
-
-                map.panTo(
-                    point,
-                    {
-                        animate: true,
-
-                        duration: 0.35
-                    }
+                movingPoint.setLatLng(
+                    currentPosition
                 );
-
             }
 
 
-            currentPoint += 1;
+            /*
+             * Move the map gently with the journey.
+             */
 
-        }, speed);
-}
+            if (
+                currentIndex > 0 &&
+                currentIndex < routePoints.length - 1
+            ) {
+
+                if (currentIndex % 8 === 0) {
+
+                    const currentPosition =
+                        routePoints[currentIndex];
+
+                    map.panTo(
+                        currentPosition,
+                        {
+                            animate: true,
+
+                            duration: 0.4
+                        }
+                    );
+                }
+            }
 
 
-/* =========================================================
-   11. START JOURNEY
-========================================================= */
+            if (progress < 1) {
 
-travelButton.addEventListener(
-    "click",
-    () => {
+                animationFrame =
+                    requestAnimationFrame(
+                        animate
+                    );
 
-        if (journeyStarted) {
-            return;
+            } else {
+
+                animationFrame = null;
+
+                finishJourney();
+            }
         }
 
-        journeyStarted = true;
 
-        travelButton.disabled = true;
+        animationFrame =
+            requestAnimationFrame(
+                animate
+            );
+    }
 
-        travelButton.style.opacity = "0.5";
 
-        storyText.textContent =
-            "Comenzamos el viaje...";
+    /* =====================================================
+       FINISH JOURNEY
+       ===================================================== */
+
+    function finishJourney() {
+
+        if (!map) return;
+
+
+        if (movingPoint) {
+
+            movingPoint.setOpacity(0);
+        }
 
 
         /*
-            Zoom toward Egypt first.
-        */
+         * Make sure the entire route is visible.
+         */
 
-        map.flyTo(
-            [egypt.lat, egypt.lng],
-            4,
-            {
-                duration: 2
-            }
+        routeLine.setLatLngs(
+            routePoints
         );
+
+
+        const bounds =
+            L.latLngBounds(routePoints);
 
 
         setTimeout(() => {
 
+            map.fitBounds(
+                bounds,
+                {
+                    paddingTopLeft: [50, 130],
+
+                    paddingBottomRight: [50, 190],
+
+                    maxZoom: 3.2,
+
+                    animate: true,
+
+                    duration: 2
+                }
+            );
+
+        }, 300);
+
+
+        if (storyText) {
+
             storyText.textContent =
-                "Un camino atraviesa el mundo entre nosotros...";
+                "Y finalmente... el camino nos lleva hasta Honduras.";
+        }
 
-            animateRoute();
 
-        }, 2200);
+        setTimeout(() => {
 
+            if (!travelButton) return;
+
+
+            travelButton.disabled = false;
+
+            travelButton.style.opacity = "1";
+
+            travelButton.textContent =
+                "Continuar";
+
+
+            travelButton.onclick = () => {
+
+                showScene(finalScene);
+            };
+
+        }, 2500);
     }
-);
 
 
-/* =========================================================
-   12. FINISH JOURNEY
-========================================================= */
+    /* =====================================================
+       START JOURNEY BUTTON
+       ===================================================== */
 
-function finishJourney() {
+    if (startJourneyButton) {
 
-    if (!map) {
-        return;
+        startJourneyButton.addEventListener(
+            "click",
+            () => {
+
+                showScene(mapScene);
+
+                /*
+                 * Wait until the map scene becomes visible.
+                 * Leaflet needs a visible container.
+                 */
+
+                setTimeout(() => {
+
+                    createMap();
+
+                    if (map) {
+
+                        map.invalidateSize(true);
+                    }
+
+                }, 350);
+            }
+        );
     }
 
 
-    /*
-        Show both countries
-    */
+    /* =====================================================
+       TRAVEL BUTTON
+       ===================================================== */
 
-    const bounds =
-        L.latLngBounds([
-            [egypt.lat, egypt.lng],
-            [honduras.lat, honduras.lng]
-        ]);
+    if (travelButton) {
+
+        travelButton.addEventListener(
+            "click",
+            () => {
+
+                /*
+                 * Ignore this event after the first journey.
+                 */
+
+                if (journeyStarted) {
+                    return;
+                }
 
 
-    map.fitBounds(
-        bounds,
-        {
-            paddingTopLeft: [40, 140],
+                journeyStarted = true;
 
-            paddingBottomRight: [40, 180],
 
-            maxZoom: 3,
+                travelButton.disabled = true;
 
-            animate: true,
+                travelButton.style.opacity = "0.5";
 
-            duration: 2
+                travelButton.textContent =
+                    "Viajando...";
+
+
+                if (storyText) {
+
+                    storyText.textContent =
+                        "Comenzamos el viaje...";
+                }
+
+
+                /*
+                 * Move toward Egypt first.
+                 */
+
+                map.flyTo(
+                    [egypt.lat, egypt.lng],
+                    3.5,
+                    {
+                        duration: 2
+                    }
+                );
+
+
+                setTimeout(() => {
+
+                    if (storyText) {
+
+                        storyText.textContent =
+                            "Un camino atraviesa el mundo entre nosotros...";
+                    }
+
+
+                    animateRoute();
+
+                }, 2200);
+            }
+        );
+    }
+
+
+    /* =====================================================
+       WINDOW RESIZE
+       ===================================================== */
+
+    let resizeTimer = null;
+
+    window.addEventListener(
+        "resize",
+        () => {
+
+            clearTimeout(resizeTimer);
+
+
+            resizeTimer = setTimeout(
+                () => {
+
+                    if (map) {
+
+                        map.invalidateSize(true);
+                    }
+
+                },
+                250
+            );
         }
     );
 
 
-    storyText.textContent =
-        "Y finalmente... llegamos a Honduras.";
+    /* =====================================================
+       VISIBILITY CHANGE
+       ===================================================== */
 
+    document.addEventListener(
+        "visibilitychange",
+        () => {
 
-    setTimeout(() => {
+            if (
+                !document.hidden &&
+                map
+            ) {
 
-        travelButton.disabled = false;
+                setTimeout(() => {
 
-        travelButton.style.opacity = "1";
+                    map.invalidateSize(true);
 
-        travelButton.textContent =
-            "Continuar";
-
-        travelButton.onclick = () => {
-
-            showScene(finalScene);
-
-        };
-
-    }, 2500);
-}
-
-
-/* =========================================================
-   13. MAP RESIZE
-========================================================= */
-
-window.addEventListener(
-    "resize",
-    () => {
-
-        if (map) {
-
-            setTimeout(() => {
-
-                map.invalidateSize();
-
-            }, 200);
-
+                }, 300);
+            }
         }
-
-    }
-);
+    );
 
 
-/* =========================================================
-   14. PREVENT ACCIDENTAL PAGE SCROLL
-========================================================= */
+    /* =====================================================
+       MOBILE TOUCH
+       ===================================================== */
 
-document.addEventListener(
-    "touchmove",
-    event => {
+    document.addEventListener(
+        "touchmove",
+        (event) => {
 
-        if (
-            event.target.closest("#map")
-        ) {
-            return;
+            /*
+             * Do NOT block touch gestures inside Leaflet.
+             */
+
+            if (
+                event.target.closest("#map")
+            ) {
+                return;
+            }
+
+            /*
+             * Only prevent unwanted page movement
+             * outside the map.
+             */
+
+            event.preventDefault();
+
+        },
+        {
+            passive: false
         }
-
-        event.preventDefault();
-
-    },
-    {
-        passive: false
-    }
-);
+    );
 
 
-/* =========================================================
-   15. INITIAL STATE
-========================================================= */
+    /* =====================================================
+       INITIAL STATE
+       ===================================================== */
 
-showScene(introScene);
+    showScene(introScene);
+
+});

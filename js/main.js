@@ -1,71 +1,43 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", function () {
 
-    /* =====================================================
-       ELEMENTS
-       ===================================================== */
-
-    const introScene = document.getElementById("intro");
-    const earthScene = document.getElementById("earthScene");
-    const finalScene = document.getElementById("finalScene");
+    console.log("Entre Dos Mundos started");
 
     const earthContainer =
         document.getElementById("earth-container");
 
+    const earthScene =
+        document.getElementById("earthScene");
+
     const earthLoading =
         document.getElementById("earthLoading");
-
-    const startJourneyButton =
-        document.getElementById("startJourney");
 
     const travelButton =
         document.getElementById("travelButton");
 
-    const distanceElement =
-        document.getElementById("distance");
-
     const storyText =
         document.getElementById("storyText");
 
+    const distanceElement =
+        document.getElementById("distance");
 
-    /* =====================================================
-       BASIC SCENE SYSTEM
-       ===================================================== */
-
-    function showScene(sceneElement) {
-
-        if (!sceneElement) {
-            console.error("Scene not found.");
-            return;
-        }
-
-        document.querySelectorAll(".scene").forEach(scene => {
-            scene.classList.remove("active");
-        });
-
-        sceneElement.classList.add("active");
-    }
+    const finalScene =
+        document.getElementById("finalScene");
 
 
-    /* =====================================================
-       COUNTRIES
-       ===================================================== */
+    /* =========================================
+       DISTANCE
+       ========================================= */
 
     const egypt = {
-        name: "Egipto",
         lat: 26.8206,
         lng: 30.8025
     };
 
     const honduras = {
-        name: "Honduras",
         lat: 14.0723,
         lng: -86.2419
     };
 
-
-    /* =====================================================
-       DISTANCE
-       ===================================================== */
 
     function calculateDistance(
         lat1,
@@ -74,25 +46,30 @@ document.addEventListener("DOMContentLoaded", () => {
         lon2
     ) {
 
-        const radius = 6371;
+        const R = 6371;
 
-        const toRadians =
-            value => value * Math.PI / 180;
+        const dLat =
+            (lat2 - lat1) *
+            Math.PI / 180;
 
-        const phi1 = toRadians(lat1);
-        const phi2 = toRadians(lat2);
-
-        const deltaPhi =
-            toRadians(lat2 - lat1);
-
-        const deltaLambda =
-            toRadians(lon2 - lon1);
+        const dLon =
+            (lon2 - lon1) *
+            Math.PI / 180;
 
         const a =
-            Math.sin(deltaPhi / 2) ** 2 +
-            Math.cos(phi1) *
-            Math.cos(phi2) *
-            Math.sin(deltaLambda / 2) ** 2;
+            Math.sin(dLat / 2) *
+            Math.sin(dLat / 2) +
+
+            Math.cos(
+                lat1 * Math.PI / 180
+            ) *
+
+            Math.cos(
+                lat2 * Math.PI / 180
+            ) *
+
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
 
         const c =
             2 *
@@ -101,11 +78,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 Math.sqrt(1 - a)
             );
 
-        return radius * c;
+        return R * c;
     }
 
 
-    const totalDistance =
+    const distance =
         calculateDistance(
             egypt.lat,
             egypt.lng,
@@ -117,205 +94,526 @@ document.addEventListener("DOMContentLoaded", () => {
     if (distanceElement) {
 
         distanceElement.textContent =
-            Math.round(totalDistance)
+            Math.round(distance)
                 .toLocaleString("es-ES") +
             " km";
     }
 
 
-    /* =====================================================
-       THREE.JS VARIABLES
-       ===================================================== */
+    /* =========================================
+       THREE.JS
+       ========================================= */
 
-    let THREE = null;
+    if (
+        typeof THREE === "undefined"
+    ) {
 
-    let scene = null;
-    let camera = null;
-    let renderer = null;
+        console.error(
+            "Three.js is not loaded."
+        );
 
-    let earthGroup = null;
-    let earth = null;
+        if (earthLoading) {
 
-    let stars = null;
+            earthLoading.innerHTML =
+                "<span>No se pudo cargar el mundo 3D.</span>";
+        }
 
-    let egyptMarker = null;
-    let hondurasMarker = null;
-
-    let routeLine = null;
-    let routeGlow = null;
-    let travelPoint = null;
-
-    let earthReady = false;
-    let journeyStarted = false;
-
-    let animationFrame = null;
-
-    let currentZoom = 15;
-
-    let isDragging = false;
-
-    let previousX = 0;
-    let previousY = 0;
-
-    let targetRotationX = -0.12;
-
-    let targetRotationY = -0.45;
-
-    let rotationVelocity = 0;
-
-    let pinchDistance = null;
-
-
-    /* =====================================================
-       LOAD THREE.JS
-       ===================================================== */
-
-    function loadThreeJS() {
-
-        return new Promise((resolve, reject) => {
-
-            if (window.THREE) {
-
-                THREE = window.THREE;
-
-                resolve();
-
-                return;
-            }
-
-
-            const script =
-                document.createElement("script");
-
-            script.src =
-                "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.min.js";
-
-            script.onload = () => {
-
-                if (!window.THREE) {
-
-                    reject(
-                        new Error(
-                            "Three.js loaded but is unavailable."
-                        )
-                    );
-
-                    return;
-                }
-
-                THREE = window.THREE;
-
-                resolve();
-            };
-
-
-            script.onerror = () => {
-
-                reject(
-                    new Error(
-                        "Could not load Three.js."
-                    )
-                );
-            };
-
-
-            document.head.appendChild(script);
-        });
+        return;
     }
 
 
-    /* =====================================================
-       LAT/LNG → 3D
-       ===================================================== */
+    console.log(
+        "Three.js loaded successfully"
+    );
+
+
+    /* =========================================
+       VARIABLES
+       ========================================= */
+
+    let scene;
+    let camera;
+    let renderer;
+
+    let earth;
+    let earthGroup;
+
+    let route;
+    let movingPoint;
+
+    let animationId;
+
+    let routeStarted = false;
+
 
     const EARTH_RADIUS = 5;
 
 
-    function latLngToVector3(
-        latitude,
-        longitude,
-        radius
-    ) {
+    /* =========================================
+       SCENE
+       ========================================= */
 
-        const phi =
-            (90 - latitude) *
-            Math.PI /
-            180;
-
-        const theta =
-            (longitude + 180) *
-            Math.PI /
-            180;
+    scene =
+        new THREE.Scene();
 
 
-        const x =
-            -radius *
-            Math.sin(phi) *
-            Math.cos(theta);
+    scene.background =
+        new THREE.Color(
+            0x00030a
+        );
 
 
-        const y =
-            radius *
-            Math.cos(phi);
+    /* =========================================
+       CAMERA
+       ========================================= */
+
+    function createCamera() {
+
+        const width =
+            earthContainer.clientWidth;
+
+        const height =
+            earthContainer.clientHeight;
 
 
-        const z =
-            radius *
-            Math.sin(phi) *
-            Math.sin(theta);
+        camera =
+            new THREE.PerspectiveCamera(
+                45,
+                width / height,
+                0.1,
+                200
+            );
 
 
-        return new THREE.Vector3(
-            x,
-            y,
-            z
+        camera.position.set(
+            0,
+            1,
+            15
+        );
+
+
+        camera.lookAt(
+            0,
+            0,
+            0
         );
     }
 
 
-    function latLngToUnitVector(
-        latitude,
-        longitude
+    createCamera();
+
+
+    /* =========================================
+       RENDERER
+       ========================================= */
+
+    renderer =
+        new THREE.WebGLRenderer({
+            antialias: true,
+            alpha: false
+        });
+
+
+    renderer.setPixelRatio(
+        Math.min(
+            window.devicePixelRatio || 1,
+            2
+        )
+    );
+
+
+    renderer.setSize(
+        earthContainer.clientWidth,
+        earthContainer.clientHeight
+    );
+
+
+    earthContainer.appendChild(
+        renderer.domElement
+    );
+
+
+    /* =========================================
+       LIGHT
+       ========================================= */
+
+    const ambientLight =
+        new THREE.AmbientLight(
+            0xffffff,
+            1.2
+        );
+
+
+    scene.add(
+        ambientLight
+    );
+
+
+    const sun =
+        new THREE.DirectionalLight(
+            0xffffff,
+            2.5
+        );
+
+
+    sun.position.set(
+        -10,
+        5,
+        10
+    );
+
+
+    scene.add(
+        sun
+    );
+
+
+    /* =========================================
+       STARS
+       ========================================= */
+
+    const starGeometry =
+        new THREE.BufferGeometry();
+
+
+    const starCount = 3000;
+
+
+    const starPositions =
+        new Float32Array(
+            starCount * 3
+        );
+
+
+    for (
+        let i = 0;
+        i < starCount;
+        i++
     ) {
 
-        return latLngToVector3(
-            latitude,
-            longitude,
-            1
-        ).normalize();
+        const radius =
+            40 +
+            Math.random() * 70;
+
+
+        const theta =
+            Math.random() *
+            Math.PI *
+            2;
+
+
+        const phi =
+            Math.acos(
+                2 *
+                Math.random() -
+                1
+            );
+
+
+        starPositions[i * 3] =
+            radius *
+            Math.sin(phi) *
+            Math.cos(theta);
+
+
+        starPositions[i * 3 + 1] =
+            radius *
+            Math.cos(phi);
+
+
+        starPositions[i * 3 + 2] =
+            radius *
+            Math.sin(phi) *
+            Math.sin(theta);
     }
 
 
-    /* =====================================================
-       GREAT CIRCLE
-       ===================================================== */
+    starGeometry.setAttribute(
+        "position",
+        new THREE.BufferAttribute(
+            starPositions,
+            3
+        )
+    );
 
-    function createGreatCirclePoints(
-        start,
-        end,
-        steps = 180
+
+    const starMaterial =
+        new THREE.PointsMaterial({
+
+            color: 0xffffff,
+
+            size: 0.07,
+
+            transparent: true,
+
+            opacity: 0.8
+        });
+
+
+    const stars =
+        new THREE.Points(
+            starGeometry,
+            starMaterial
+        );
+
+
+    scene.add(
+        stars
+    );
+
+
+    /* =========================================
+       EARTH GROUP
+       ========================================= */
+
+    earthGroup =
+        new THREE.Group();
+
+
+    scene.add(
+        earthGroup
+    );
+
+
+    /* =========================================
+       EARTH
+       ========================================= */
+
+    const earthGeometry =
+        new THREE.SphereGeometry(
+            EARTH_RADIUS,
+            64,
+            64
+        );
+
+
+    const earthMaterial =
+        new THREE.MeshPhongMaterial({
+
+            color: 0x2870ad,
+
+            shininess: 15
+        });
+
+
+    earth =
+        new THREE.Mesh(
+            earthGeometry,
+            earthMaterial
+        );
+
+
+    earth.rotation.y =
+        -Math.PI / 2;
+
+
+    earthGroup.add(
+        earth
+    );
+
+
+    /* =========================================
+       EARTH TEXTURE
+       ========================================= */
+
+    const textureLoader =
+        new THREE.TextureLoader();
+
+
+    textureLoader.load(
+
+        "https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg",
+
+        function (texture) {
+
+            texture.colorSpace =
+                THREE.SRGBColorSpace;
+
+
+            earthMaterial.map =
+                texture;
+
+
+            earthMaterial.color.set(
+                0xffffff
+            );
+
+
+            earthMaterial.needsUpdate =
+                true;
+
+        },
+
+        undefined,
+
+        function () {
+
+            console.warn(
+                "Earth texture failed. Using fallback."
+            );
+        }
+    );
+
+
+    /* =========================================
+       ATMOSPHERE
+       ========================================= */
+
+    const atmosphere =
+        new THREE.Mesh(
+
+            new THREE.SphereGeometry(
+                EARTH_RADIUS * 1.04,
+                48,
+                48
+            ),
+
+            new THREE.MeshBasicMaterial({
+
+                color: 0x4da3ff,
+
+                transparent: true,
+
+                opacity: 0.12,
+
+                side: THREE.BackSide,
+
+                blending:
+                    THREE.AdditiveBlending,
+
+                depthWrite: false
+            })
+        );
+
+
+    earthGroup.add(
+        atmosphere
+    );
+
+
+    /* =========================================
+       COORDINATES
+       ========================================= */
+
+    function coordinateToVector(
+        lat,
+        lng,
+        radius
     ) {
 
-        const points = [];
+        const phi =
+            (90 - lat) *
+            Math.PI /
+            180;
 
 
-        const startVector =
-            latLngToUnitVector(
-                start.lat,
-                start.lng
+        const theta =
+            (lng + 180) *
+            Math.PI /
+            180;
+
+
+        return new THREE.Vector3(
+
+            -radius *
+            Math.sin(phi) *
+            Math.cos(theta),
+
+            radius *
+            Math.cos(phi),
+
+            radius *
+            Math.sin(phi) *
+            Math.sin(theta)
+        );
+    }
+
+
+    /* =========================================
+       COUNTRY MARKERS
+       ========================================= */
+
+    function createMarker(
+        lat,
+        lng
+    ) {
+
+        const position =
+            coordinateToVector(
+                lat,
+                lng,
+                EARTH_RADIUS + 0.12
             );
 
 
-        const endVector =
-            latLngToUnitVector(
-                end.lat,
-                end.lng
+        const marker =
+            new THREE.Mesh(
+
+                new THREE.SphereGeometry(
+                    0.12,
+                    16,
+                    16
+                ),
+
+                new THREE.MeshBasicMaterial({
+                    color: 0xffffff
+                })
             );
+
+
+        marker.position.copy(
+            position
+        );
+
+
+        earthGroup.add(
+            marker
+        );
+
+
+        return marker;
+    }
+
+
+    const egyptMarker =
+        createMarker(
+            egypt.lat,
+            egypt.lng
+        );
+
+
+    const hondurasMarker =
+        createMarker(
+            honduras.lat,
+            honduras.lng
+        );
+
+
+    /* =========================================
+       GREAT CIRCLE ROUTE
+       ========================================= */
+
+    function createRoutePoints() {
+
+        const start =
+            coordinateToVector(
+                egypt.lat,
+                egypt.lng,
+                1
+            ).normalize();
+
+
+        const end =
+            coordinateToVector(
+                honduras.lat,
+                honduras.lng,
+                1
+            ).normalize();
 
 
         const dot =
             THREE.MathUtils.clamp(
-                startVector.dot(endVector),
+                start.dot(end),
                 -1,
                 1
             );
@@ -329,14 +627,17 @@ document.addEventListener("DOMContentLoaded", () => {
             Math.sin(angle);
 
 
+        const points = [];
+
+
         for (
             let i = 0;
-            i <= steps;
+            i <= 160;
             i++
         ) {
 
             const t =
-                i / steps;
+                i / 160;
 
 
             const a =
@@ -353,33 +654,31 @@ document.addEventListener("DOMContentLoaded", () => {
                 sinAngle;
 
 
-            const vector =
+            const point =
                 new THREE.Vector3()
                     .addScaledVector(
-                        startVector,
+                        start,
                         a
                     )
                     .addScaledVector(
-                        endVector,
+                        end,
                         b
                     )
                     .normalize();
 
 
-            const altitude =
+            point.multiplyScalar(
                 EARTH_RADIUS +
-                0.08 +
+                0.12 +
                 Math.sin(
                     t * Math.PI
-                ) * 0.65;
-
-
-            vector.multiplyScalar(
-                altitude
+                ) * 0.6
             );
 
 
-            points.push(vector);
+            points.push(
+                point
+            );
         }
 
 
@@ -387,1344 +686,414 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    /* =====================================================
-       STARS
-       ===================================================== */
-
-    function createStars() {
-
-        const geometry =
-            new THREE.BufferGeometry();
+    const routePoints =
+        createRoutePoints();
 
 
-        const count = 3500;
+    /* =========================================
+       ROUTE LINE
+       ========================================= */
 
-
-        const positions =
-            new Float32Array(
-                count * 3
+    const routeGeometry =
+        new THREE.BufferGeometry()
+            .setFromPoints(
+                routePoints
             );
 
 
-        for (
-            let i = 0;
-            i < count;
-            i++
-        ) {
+    const routeMaterial =
+        new THREE.LineBasicMaterial({
 
-            const radius =
-                35 +
-                Math.random() * 90;
+            color: 0xffffff,
 
+            transparent: true,
 
-            const theta =
-                Math.random() *
-                Math.PI *
-                2;
+            opacity: 0.9
+        });
 
 
-            const phi =
-                Math.acos(
-                    2 * Math.random() - 1
-                );
-
-
-            positions[i * 3] =
-                radius *
-                Math.sin(phi) *
-                Math.cos(theta);
-
-
-            positions[i * 3 + 1] =
-                radius *
-                Math.cos(phi);
-
-
-            positions[i * 3 + 2] =
-                radius *
-                Math.sin(phi) *
-                Math.sin(theta);
-        }
-
-
-        geometry.setAttribute(
-            "position",
-            new THREE.BufferAttribute(
-                positions,
-                3
-            )
+    route =
+        new THREE.Line(
+            routeGeometry,
+            routeMaterial
         );
 
 
-        const material =
-            new THREE.PointsMaterial({
-
-                color: 0xffffff,
-
-                size: 0.07,
-
-                transparent: true,
-
-                opacity: 0.75
-            });
+    route.visible =
+        false;
 
 
-        stars =
-            new THREE.Points(
-                geometry,
-                material
-            );
+    earthGroup.add(
+        route
+    );
 
 
-        scene.add(stars);
-    }
+    /* =========================================
+       MOVING POINT
+       ========================================= */
 
+    movingPoint =
+        new THREE.Mesh(
 
-    /* =====================================================
-       EARTH
-       ===================================================== */
-
-    function createEarth() {
-
-        earthGroup =
-            new THREE.Group();
-
-
-        scene.add(
-            earthGroup
-        );
-
-
-        const geometry =
             new THREE.SphereGeometry(
-                EARTH_RADIUS,
-                96,
-                96
-            );
+                0.16,
+                20,
+                20
+            ),
 
-
-        const textureLoader =
-            new THREE.TextureLoader();
-
-
-        const material =
-            new THREE.MeshPhongMaterial({
-
-                color: 0x4477aa,
-
-                shininess: 10
-            });
-
-
-        earth =
-            new THREE.Mesh(
-                geometry,
-                material
-            );
-
-
-        earth.rotation.y =
-            -Math.PI / 2;
-
-
-        earthGroup.add(
-            earth
-        );
-
-
-        /* ===============================
-           EARTH ATMOSPHERE
-           =============================== */
-
-        const atmosphereGeometry =
-            new THREE.SphereGeometry(
-                EARTH_RADIUS * 1.035,
-                64,
-                64
-            );
-
-
-        const atmosphereMaterial =
             new THREE.MeshBasicMaterial({
-
-                color: 0x4da3ff,
-
-                transparent: true,
-
-                opacity: 0.13,
-
-                side: THREE.BackSide,
-
-                blending:
-                    THREE.AdditiveBlending,
-
-                depthWrite: false
-            });
-
-
-        const atmosphere =
-            new THREE.Mesh(
-                atmosphereGeometry,
-                atmosphereMaterial
-            );
-
-
-        earthGroup.add(
-            atmosphere
+                color: 0xffffff
+            })
         );
 
 
-        /* ===============================
-           LOAD EARTH TEXTURE
-           =============================== */
+    movingPoint.visible =
+        false;
 
-        textureLoader.load(
 
-            "https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg",
+    earthGroup.add(
+        movingPoint
+    );
 
-            texture => {
 
-                texture.colorSpace =
-                    THREE.SRGBColorSpace;
+    /* =========================================
+       INITIAL EARTH POSITION
+       ========================================= */
 
-                earth.material.map =
-                    texture;
+    earthGroup.rotation.x =
+        -0.12;
 
-                earth.material.color.set(
-                    0xffffff
-                );
 
-                earth.material.needsUpdate =
-                    true;
-            },
+    earthGroup.rotation.y =
+        -0.45;
 
-            undefined,
 
-            error => {
+    /* =========================================
+       HIDE LOADING
+       ========================================= */
 
-                console.warn(
-                    "Earth texture unavailable.",
-                    error
-                );
-            }
-        );
-    }
+    setTimeout(
+        function () {
 
-
-    /* =====================================================
-       LIGHTING
-       ===================================================== */
-
-    function createLighting() {
-
-        const ambient =
-            new THREE.AmbientLight(
-                0x7890b0,
-                0.7
-            );
-
-
-        scene.add(
-            ambient
-        );
-
-
-        const sun =
-            new THREE.DirectionalLight(
-                0xffffff,
-                2.4
-            );
-
-
-        sun.position.set(
-            -10,
-            6,
-            10
-        );
-
-
-        scene.add(
-            sun
-        );
-
-
-        const fill =
-            new THREE.DirectionalLight(
-                0x416ca8,
-                0.5
-            );
-
-
-        fill.position.set(
-            8,
-            -3,
-            -8
-        );
-
-
-        scene.add(
-            fill
-        );
-    }
-
-
-    /* =====================================================
-       COUNTRY MARKERS
-       ===================================================== */
-
-    function createCountryMarker(
-        location
-    ) {
-
-        const group =
-            new THREE.Group();
-
-
-        const position =
-            latLngToVector3(
-                location.lat,
-                location.lng,
-                EARTH_RADIUS + 0.13
-            );
-
-
-        group.position.copy(
-            position
-        );
-
-
-        const core =
-            new THREE.Mesh(
-
-                new THREE.SphereGeometry(
-                    0.09,
-                    16,
-                    16
-                ),
-
-                new THREE.MeshBasicMaterial({
-                    color: 0xffffff
-                })
-            );
-
-
-        group.add(
-            core
-        );
-
-
-        const glow =
-            new THREE.Mesh(
-
-                new THREE.SphereGeometry(
-                    0.28,
-                    20,
-                    20
-                ),
-
-                new THREE.MeshBasicMaterial({
-
-                    color: 0x6da9ff,
-
-                    transparent: true,
-
-                    opacity: 0.15,
-
-                    blending:
-                        THREE.AdditiveBlending,
-
-                    depthWrite: false
-                })
-            );
-
-
-        group.add(
-            glow
-        );
-
-
-        earthGroup.add(
-            group
-        );
-
-
-        return group;
-    }
-
-
-    /* =====================================================
-       ROUTE
-       ===================================================== */
-
-    function createRoute() {
-
-        const points =
-            createGreatCirclePoints(
-                egypt,
-                honduras,
-                220
-            );
-
-
-        const geometry =
-            new THREE.BufferGeometry()
-                .setFromPoints(
-                    points
-                );
-
-
-        const material =
-            new THREE.LineBasicMaterial({
-
-                color: 0xffffff,
-
-                transparent: true,
-
-                opacity: 0.9
-            });
-
-
-        routeLine =
-            new THREE.Line(
-                geometry,
-                material
-            );
-
-
-        routeLine.visible =
-            false;
-
-
-        earthGroup.add(
-            routeLine
-        );
-
-
-        const glowMaterial =
-            new THREE.LineBasicMaterial({
-
-                color: 0x4d8cff,
-
-                transparent: true,
-
-                opacity: 0.2
-            });
-
-
-        routeGlow =
-            new THREE.Line(
-                geometry.clone(),
-                glowMaterial
-            );
-
-
-        routeGlow.visible =
-            false;
-
-
-        earthGroup.add(
-            routeGlow
-        );
-
-
-        travelPoint =
-            new THREE.Mesh(
-
-                new THREE.SphereGeometry(
-                    0.12,
-                    20,
-                    20
-                ),
-
-                new THREE.MeshBasicMaterial({
-                    color: 0xffffff
-                })
-            );
-
-
-        travelPoint.visible =
-            false;
-
-
-        earthGroup.add(
-            travelPoint
-        );
-
-
-        routeLine.userData.points =
-            points;
-    }
-
-
-    /* =====================================================
-       INITIALIZE THREE
-       ===================================================== */
-
-    function initializeThree() {
-
-        if (
-            !earthContainer ||
-            !THREE
-        ) {
-            return;
-        }
-
-
-        /* Prevent duplicate initialization */
-
-        if (renderer) {
-
-            handleResize();
-
-            return;
-        }
-
-
-        scene =
-            new THREE.Scene();
-
-
-        scene.background =
-            new THREE.Color(
-                0x00030a
-            );
-
-
-        camera =
-            new THREE.PerspectiveCamera(
-
-                45,
-
-                earthContainer.clientWidth /
-                earthContainer.clientHeight,
-
-                0.1,
-
-                300
-            );
-
-
-        camera.position.set(
-            0,
-            0.7,
-            currentZoom
-        );
-
-
-        camera.lookAt(
-            0,
-            0,
-            0
-        );
-
-
-        renderer =
-            new THREE.WebGLRenderer({
-
-                antialias: true,
-
-                alpha: false,
-
-                powerPreference:
-                    "high-performance"
-            });
-
-
-        renderer.setPixelRatio(
-            Math.min(
-                window.devicePixelRatio || 1,
-                2
-            )
-        );
-
-
-        renderer.setSize(
-            earthContainer.clientWidth,
-            earthContainer.clientHeight
-        );
-
-
-        if (
-            "outputColorSpace" in renderer
-        ) {
-
-            renderer.outputColorSpace =
-                THREE.SRGBColorSpace;
-        }
-
-
-        earthContainer.innerHTML = "";
-
-
-        earthContainer.appendChild(
-            renderer.domElement
-        );
-
-
-        createLighting();
-
-        createStars();
-
-        createEarth();
-
-        egyptMarker =
-            createCountryMarker(
-                egypt
-            );
-
-        hondurasMarker =
-            createCountryMarker(
-                honduras
-            );
-
-        createRoute();
-
-
-        earthReady = true;
-
-
-        if (earthLoading) {
-
-            setTimeout(() => {
+            if (earthLoading) {
 
                 earthLoading.classList.add(
                     "hidden"
                 );
-
-            }, 500);
-        }
-
-
-        animate();
-    }
-
-
-    /* =====================================================
-       RESIZE
-       ===================================================== */
-
-    function handleResize() {
-
-        if (
-            !renderer ||
-            !camera ||
-            !earthContainer
-        ) {
-            return;
-        }
-
-
-        const width =
-            earthContainer.clientWidth;
-
-
-        const height =
-            earthContainer.clientHeight;
-
-
-        camera.aspect =
-            width / height;
-
-
-        camera.updateProjectionMatrix();
-
-
-        renderer.setSize(
-            width,
-            height
-        );
-    }
-
-
-    window.addEventListener(
-        "resize",
-        handleResize
-    );
-
-
-    /* =====================================================
-       ROTATION
-       ===================================================== */
-
-    function startDragging(event) {
-
-        if (
-            !earthReady ||
-            !earthScene.classList.contains(
-                "active"
-            )
-        ) {
-            return;
-        }
-
-
-        isDragging = true;
-
-
-        previousX =
-            event.clientX;
-
-
-        previousY =
-            event.clientY;
-
-
-        rotationVelocity = 0;
-    }
-
-
-    function moveDragging(event) {
-
-        if (
-            !isDragging ||
-            !earthGroup
-        ) {
-            return;
-        }
-
-
-        const dx =
-            event.clientX -
-            previousX;
-
-
-        const dy =
-            event.clientY -
-            previousY;
-
-
-        previousX =
-            event.clientX;
-
-
-        previousY =
-            event.clientY;
-
-
-        targetRotationY +=
-            dx * 0.004;
-
-
-        targetRotationX +=
-            dy * 0.0025;
-
-
-        targetRotationX =
-            THREE.MathUtils.clamp(
-                targetRotationX,
-                -0.8,
-                0.8
-            );
-
-
-        rotationVelocity =
-            dx * 0.002;
-    }
-
-
-    function stopDragging() {
-
-        isDragging = false;
-    }
-
-
-    document.addEventListener(
-        "pointerdown",
-        startDragging
-    );
-
-
-    document.addEventListener(
-        "pointermove",
-        moveDragging
-    );
-
-
-    document.addEventListener(
-        "pointerup",
-        stopDragging
-    );
-
-
-    /* =====================================================
-       ZOOM
-       ===================================================== */
-
-    document.addEventListener(
-        "wheel",
-        event => {
-
-            if (
-                !earthScene.classList.contains(
-                    "active"
-                )
-            ) {
-                return;
             }
 
-
-            currentZoom +=
-                event.deltaY * 0.008;
-
-
-            currentZoom =
-                THREE.MathUtils.clamp(
-                    currentZoom,
-                    6,
-                    22
-                );
         },
-        {
-            passive: true
-        }
+        1000
     );
 
 
-    /* =====================================================
-       TOUCH PINCH
-       ===================================================== */
-
-    document.addEventListener(
-        "touchstart",
-        event => {
-
-            if (
-                event.touches.length !== 2
-            ) {
-                return;
-            }
-
-
-            const a =
-                event.touches[0];
-
-
-            const b =
-                event.touches[1];
-
-
-            pinchDistance =
-                Math.hypot(
-                    a.clientX - b.clientX,
-                    a.clientY - b.clientY
-                );
-        },
-        {
-            passive: true
-        }
-    );
-
-
-    document.addEventListener(
-        "touchmove",
-        event => {
-
-            if (
-                event.touches.length !== 2 ||
-                pinchDistance === null ||
-                !THREE
-            ) {
-                return;
-            }
-
-
-            const a =
-                event.touches[0];
-
-
-            const b =
-                event.touches[1];
-
-
-            const newDistance =
-                Math.hypot(
-                    a.clientX - b.clientX,
-                    a.clientY - b.clientY
-                );
-
-
-            const difference =
-                newDistance -
-                pinchDistance;
-
-
-            currentZoom -=
-                difference * 0.008;
-
-
-            currentZoom =
-                THREE.MathUtils.clamp(
-                    currentZoom,
-                    6,
-                    22
-                );
-
-
-            pinchDistance =
-                newDistance;
-        },
-        {
-            passive: true
-        }
-    );
-
-
-    document.addEventListener(
-        "touchend",
-        () => {
-
-            pinchDistance = null;
-
-        },
-        {
-            passive: true
-        }
-    );
-
-
-    /* =====================================================
+    /* =========================================
        ANIMATION
-       ===================================================== */
+       ========================================= */
 
-    function animate(
-        time = performance.now()
-    ) {
+    function animate() {
 
-        animationFrame =
+        animationId =
             requestAnimationFrame(
                 animate
             );
 
 
-        if (earthGroup) {
-
-            if (!isDragging) {
-
-                if (!journeyStarted) {
-
-                    targetRotationY +=
-                        0.0007;
-                }
-
-                targetRotationY +=
-                    rotationVelocity;
-
-                rotationVelocity *=
-                    0.94;
-            }
-
-
-            earthGroup.rotation.y +=
-                (
-                    targetRotationY -
-                    earthGroup.rotation.y
-                ) * 0.08;
-
-
-            earthGroup.rotation.x +=
-                (
-                    targetRotationX -
-                    earthGroup.rotation.x
-                ) * 0.08;
-        }
-
-
-        if (stars) {
-
-            stars.rotation.y +=
-                0.00003;
-        }
-
-
-        if (egyptMarker) {
-
-            const pulse =
-                1 +
-                Math.sin(
-                    time * 0.003
-                ) * 0.15;
-
-
-            egyptMarker.scale.set(
-                pulse,
-                pulse,
-                pulse
-            );
-        }
-
-
-        if (hondurasMarker) {
-
-            const pulse =
-                1 +
-                Math.sin(
-                    time * 0.003
-                ) * 0.15;
-
-
-            hondurasMarker.scale.set(
-                pulse,
-                pulse,
-                pulse
-            );
-        }
-
-
-        if (camera) {
-
-            camera.position.z =
-                currentZoom;
-
-
-            camera.lookAt(
-                0,
-                0,
-                0
-            );
-        }
-
-
         if (
-            renderer &&
-            scene &&
-            camera
+            earthScene &&
+            earthScene.classList.contains(
+                "active"
+            )
         ) {
 
-            renderer.render(
-                scene,
-                camera
-            );
+            if (!routeStarted) {
+
+                earthGroup.rotation.y +=
+                    0.0008;
+            }
         }
+
+
+        stars.rotation.y +=
+            0.00003;
+
+
+        const pulse =
+            1 +
+            Math.sin(
+                performance.now() * 0.003
+            ) * 0.12;
+
+
+        egyptMarker.scale.set(
+            pulse,
+            pulse,
+            pulse
+        );
+
+
+        hondurasMarker.scale.set(
+            pulse,
+            pulse,
+            pulse
+        );
+
+
+        renderer.render(
+            scene,
+            camera
+        );
     }
 
 
-    /* =====================================================
-       ROUTE ANIMATION
-       ===================================================== */
+    animate();
 
-    function startRouteAnimation() {
 
-        if (
-            !routeLine ||
-            !routeGlow ||
-            !travelPoint
-        ) {
-            return;
+    /* =========================================
+       RESIZE
+       ========================================= */
+
+    window.addEventListener(
+        "resize",
+        function () {
+
+            const width =
+                earthContainer.clientWidth;
+
+            const height =
+                earthContainer.clientHeight;
+
+
+            camera.aspect =
+                width / height;
+
+
+            camera.updateProjectionMatrix();
+
+
+            renderer.setSize(
+                width,
+                height
+            );
         }
+    );
 
 
-        const points =
-            routeLine.userData.points;
+    /* =========================================
+       START JOURNEY
+       ========================================= */
 
+    travelButton.addEventListener(
+        "click",
+        function () {
 
-        if (
-            !points ||
-            points.length === 0
-        ) {
-            return;
-        }
-
-
-        routeLine.visible =
-            true;
-
-
-        routeGlow.visible =
-            true;
-
-
-        travelPoint.visible =
-            true;
-
-
-        const duration =
-            8000;
-
-
-        const startTime =
-            performance.now();
-
-
-        function drawRoute(time) {
-
-            const progress =
-                Math.min(
-                    (time - startTime) /
-                    duration,
-                    1
-                );
-
-
-            const eased =
-                progress < 0.5
-
-                    ? 2 *
-                      progress *
-                      progress
-
-                    : 1 -
-                      Math.pow(
-                          -2 * progress + 2,
-                          2
-                      ) / 2;
-
-
-            const index =
-                Math.floor(
-                    eased *
-                    (points.length - 1)
-                );
-
-
-            const visiblePoints =
-                points.slice(
-                    0,
-                    index + 1
-                );
-
-
-            routeLine.geometry.dispose();
-
-
-            routeLine.geometry =
-                new THREE.BufferGeometry()
-                    .setFromPoints(
-                        visiblePoints
-                    );
-
-
-            routeGlow.geometry.dispose();
-
-
-            routeGlow.geometry =
-                new THREE.BufferGeometry()
-                    .setFromPoints(
-                        visiblePoints
-                    );
-
-
-            if (points[index]) {
-
-                travelPoint.position.copy(
-                    points[index]
-                );
+            if (routeStarted) {
+                return;
             }
+
+
+            routeStarted =
+                true;
+
+
+            travelButton.disabled =
+                true;
+
+
+            travelButton.textContent =
+                "Viajando...";
 
 
             if (storyText) {
 
-                if (progress < 0.33) {
-
-                    storyText.textContent =
-                        "Un camino comienza a cruzar el mundo...";
-
-                } else if (
-                    progress < 0.7
-                ) {
-
-                    storyText.textContent =
-                        "Miles de kilómetros entre dos corazones...";
-
-                } else {
-
-                    storyText.textContent =
-                        "Y aun así, el mundo parece un poco más pequeño.";
-                }
+                storyText.textContent =
+                    "El camino comienza entre Egipto y Honduras...";
             }
 
 
-            if (progress < 1) {
+            route.visible =
+                true;
 
-                requestAnimationFrame(
-                    drawRoute
-                );
 
-            } else {
+            movingPoint.visible =
+                true;
 
-                finishJourney();
-            }
-        }
 
+            let index = 0;
 
-        requestAnimationFrame(
-            drawRoute
-        );
-    }
 
+            const routeTimer =
+                setInterval(
+                    function () {
 
-    /* =====================================================
-       FINISH JOURNEY
-       ===================================================== */
+                        if (
+                            index >=
+                            routePoints.length
+                        ) {
 
-    function finishJourney() {
+                            clearInterval(
+                                routeTimer
+                            );
 
-        if (travelPoint) {
 
-            travelPoint.visible =
-                false;
-        }
+                            movingPoint.visible =
+                                false;
 
 
-        if (storyText) {
+                            travelButton.disabled =
+                                false;
 
-            storyText.textContent =
-                "Finalmente... el camino llega hasta Honduras.";
-        }
 
+                            travelButton.textContent =
+                                "Continuar";
 
-        if (travelButton) {
 
-            travelButton.disabled =
-                false;
+                            if (storyText) {
 
+                                storyText.textContent =
+                                    "Finalmente... el camino llega hasta Honduras.";
+                            }
 
-            travelButton.style.opacity =
-                "1";
 
+                            travelButton.onclick =
+                                function () {
 
-            travelButton.textContent =
-                "Continuar";
+                                    earthScene.classList.remove(
+                                        "active"
+                                    );
 
 
-            travelButton.onclick =
-                () => {
+                                    finalScene.classList.add(
+                                        "active"
+                                    );
+                                };
 
-                    showScene(
-                        finalScene
-                    );
-                };
-        }
-    }
 
+                            return;
+                        }
 
-    /* =====================================================
-       START BUTTON
-       ===================================================== */
 
-    if (startJourneyButton) {
+                        const visiblePoints =
+                            routePoints.slice(
+                                0,
+                                index + 1
+                            );
 
-        startJourneyButton.addEventListener(
-            "click",
-            async () => {
 
-                /*
-                 * IMPORTANT:
-                 * First change the scene.
-                 * Do not wait for Three.js.
-                 */
+                        route.geometry.dispose();
 
-                showScene(
-                    earthScene
-                );
 
+                        route.geometry =
+                            new THREE.BufferGeometry()
+                                .setFromPoints(
+                                    visiblePoints
+                                );
 
-                /*
-                 * Show loading.
-                 */
 
-                if (earthLoading) {
+                        movingPoint.position.copy(
+                            routePoints[index]
+                        );
 
-                    earthLoading.classList.remove(
-                        "hidden"
-                    );
-                }
 
-
-                /*
-                 * Load Three.js after
-                 * entering the scene.
-                 */
-
-                try {
-
-                    await loadThreeJS();
-
-
-                    initializeThree();
-
-
-                } catch (error) {
-
-                    console.error(
-                        "Three.js error:",
-                        error
-                    );
-
-
-                    if (earthLoading) {
-
-                        earthLoading.innerHTML = `
-                            <span>
-                                No se pudo cargar el mundo 3D.
-                            </span>
-                        `;
-                    }
-                }
-            }
-        );
-    }
-
-
-    /* =====================================================
-       TRAVEL BUTTON
-       ===================================================== */
-
-    if (travelButton) {
-
-        travelButton.addEventListener(
-            "click",
-            () => {
-
-                if (
-                    !earthReady ||
-                    journeyStarted
-                ) {
-                    return;
-                }
-
-
-                journeyStarted =
-                    true;
-
-
-                travelButton.disabled =
-                    true;
-
-
-                travelButton.style.opacity =
-                    "0.5";
-
-
-                travelButton.textContent =
-                    "Viajando...";
-
-
-                if (storyText) {
-
-                    storyText.textContent =
-                        "Preparando el camino entre nosotros...";
-                }
-
-
-                setTimeout(
-                    () => {
-
-                        startRouteAnimation();
+                        index++;
 
                     },
-                    1200
+                    50
                 );
+        }
+    );
+
+
+    /* =========================================
+       MOUSE / TOUCH ROTATION
+       ========================================= */
+
+    let dragging = false;
+
+    let lastX = 0;
+    let lastY = 0;
+
+
+    earthContainer.addEventListener(
+        "pointerdown",
+        function (event) {
+
+            dragging = true;
+
+            lastX =
+                event.clientX;
+
+            lastY =
+                event.clientY;
+        }
+    );
+
+
+    earthContainer.addEventListener(
+        "pointermove",
+        function (event) {
+
+            if (!dragging) {
+                return;
             }
-        );
-    }
 
 
-    /* =====================================================
-       INITIAL STATE
-       ===================================================== */
+            const dx =
+                event.clientX -
+                lastX;
 
-    showScene(
-        introScene
+
+            const dy =
+                event.clientY -
+                lastY;
+
+
+            lastX =
+                event.clientX;
+
+
+            lastY =
+                event.clientY;
+
+
+            earthGroup.rotation.y +=
+                dx * 0.005;
+
+
+            earthGroup.rotation.x +=
+                dy * 0.003;
+
+
+            earthGroup.rotation.x =
+                THREE.MathUtils.clamp(
+                    earthGroup.rotation.x,
+                    -0.8,
+                    0.8
+                );
+        }
+    );
+
+
+    earthContainer.addEventListener(
+        "pointerup",
+        function () {
+
+            dragging = false;
+        }
+    );
+
+
+    earthContainer.addEventListener(
+        "pointerleave",
+        function () {
+
+            dragging = false;
+        }
+    );
+
+
+    console.log(
+        "3D Earth initialized successfully"
     );
 
 });

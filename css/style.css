@@ -1,263 +1,342 @@
 /* ==========================================================================
-   Entre Dos Mundos - Custom Styles Sheet
+   Entre Dos Mundos - Cinematic & Mobile-First Stylesheet
    ========================================================================== */
 
-/* --- Import Google Fonts --- */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Montserrat:wght@300;400;500;600&display=swap');
-
-/* --- Root Variables --- */
+/* --- Variables --- */
 :root {
-  --primary-color: #d4af37;        /* Gold tone for romantic/cinematic aesthetic */
-  --primary-hover: #f3e5ab;
-  --accent-red: #e63946;           /* Heart and marker highlight */
-  --bg-dark-overlay: rgba(10, 15, 30, 0.75);
-  --glass-bg: rgba(20, 25, 40, 0.55);
-  --glass-border: rgba(212, 175, 55, 0.3);
-  --text-light: #f8f9fa;
-  --text-muted: #cbd5e1;
+  --primary-gold: #d4af37;
+  --primary-glow: rgba(212, 175, 55, 0.4);
+  --accent-red: #e63946;
+  --bg-dark: #05070a;
+  --glass-bg: rgba(12, 16, 26, 0.65);
+  --glass-border: rgba(212, 175, 55, 0.25);
+  --text-main: #f8f9fa;
+  --text-sub: #cbd5e1;
   --font-serif: 'Cinzel', serif;
   --font-sans: 'Montserrat', sans-serif;
 }
 
-/* --- Global Reset & Basics --- */
+/* --- Global Reset & Lock Scroll --- */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
   user-select: none;
   -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background-color: #000;
+  position: fixed; /* Prevents bounce scroll on iOS */
+  background-color: var(--bg-dark);
   font-family: var(--font-sans);
-  color: var(--text-light);
+  color: var(--text-main);
 }
 
-/* --- Cesium Container --- */
-#cesiumContainer {
-  width: 100%;
-  height: 100%;
+/* --- 3D Globe Container --- */
+#globeViz {
   position: absolute;
   top: 0;
   left: 0;
+  width: 100%;
+  height: 100%;
   z-index: 1;
+  cursor: grab;
 }
 
-/* --- Hide Default Cesium UI Widgets for Clean Look --- */
-.cesium-viewer-animationContainer,
-.cesium-viewer-timelineContainer,
-.cesium-viewer-bottom,
-.cesium-selection-wrapper,
-.cesium-infoBox {
-  display: none !important;
+#globeViz:active {
+  cursor: grabbing;
 }
 
-/* --- UI Overlay Layer --- */
-.overlay-container {
+/* --- Loading & Error Screens --- */
+.loading-screen,
+.error-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  background-color: var(--bg-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+
+.loader-content,
+.error-content {
+  text-align: center;
+  padding: 2rem;
+  max-width: 85%;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 1.5rem auto;
+  border: 3px solid rgba(212, 175, 55, 0.15);
+  border-top-color: var(--primary-gold);
+  border-radius: 50%;
+  animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  letter-spacing: 2px;
+  color: var(--primary-gold);
+}
+
+.error-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.error-content h2 {
+  font-family: var(--font-serif);
+  color: var(--accent-red);
+  margin-bottom: 0.5rem;
+  font-size: 1.3rem;
+}
+
+.error-content p {
+  color: var(--text-sub);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* --- UI Overlay Scenes Layout --- */
+.overlay-scene {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   z-index: 10;
-  pointer-events: none; /* Let clicks pass through to 3D Globe */
+  pointer-events: none;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 2rem;
+  padding: 2rem 1.5rem;
+  transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
-/* Enable pointer events on interactive UI elements */
-.header, 
-.info-card {
+.hidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden;
+}
+
+/* --- Interactive Hero Card (Intro & Final) --- */
+.hero-card {
   pointer-events: auto;
-}
-
-/* --- Romantic Header --- */
-.header {
+  margin: auto;
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  padding: 2.5rem 2rem;
   text-align: center;
-  margin-top: 0.5rem;
-  background: radial-gradient(ellipse at top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 70%);
-  padding: 1rem;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(212, 175, 55, 0.08);
 }
 
-.title {
+.main-title {
   font-family: var(--font-serif);
-  font-size: 2.8rem;
+  font-size: 2rem;
   font-weight: 700;
   letter-spacing: 4px;
   color: #ffffff;
-  text-shadow: 0 0 15px rgba(212, 175, 55, 0.6), 0 2px 4px rgba(0, 0, 0, 0.8);
-  text-transform: uppercase;
+  text-shadow: 0 0 20px var(--primary-glow);
+  margin-bottom: 0.8rem;
 }
 
-.subtitle {
+.subtitle-text {
   font-size: 1.1rem;
   font-weight: 300;
-  letter-spacing: 2px;
-  color: var(--text-muted);
-  margin-top: 0.4rem;
+  color: var(--text-sub);
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  letter-spacing: 1px;
 }
 
-.heart {
-  color: var(--accent-red);
-  display: inline-block;
-  animation: pulse 1.8s infinite ease-in-out;
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); opacity: 0.8; }
-  50% { transform: scale(1.25); opacity: 1; }
-}
-
-/* --- Cinematic Glassmorphism Card --- */
-.info-card {
-  align-self: center;
-  margin-bottom: 1.5rem;
+/* --- Main UI Top & Bottom Bars --- */
+.top-bar {
+  pointer-events: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0.8rem 1.2rem;
   background: var(--glass-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border);
-  border-radius: 20px;
-  padding: 1.5rem 2.5rem;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(212, 175, 55, 0.1);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.2rem;
-  max-width: 480px;
-  width: 90%;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 30px;
 }
 
-.info-card:hover {
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.7), inset 0 0 20px rgba(212, 175, 55, 0.2);
-}
-
-/* Distance Box */
-.distance-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.3rem;
-}
-
-.label {
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: var(--text-muted);
-}
-
-.distance-number {
+.brand {
   font-family: var(--font-serif);
-  font-size: 1.8rem;
+  font-size: 0.95rem;
+  letter-spacing: 1.5px;
+  color: var(--primary-gold);
   font-weight: 600;
-  color: var(--primary-color);
-  text-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
 }
 
-/* Buttons Controls */
-.controls {
+.distance-badge {
   display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.dist-label {
+  font-size: 0.65rem;
+  letter-spacing: 1.5px;
+  color: var(--text-sub);
+}
+
+.dist-val {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* --- Story Overlay for Camera Sequence --- */
+.story-container {
+  pointer-events: none;
+  align-self: center;
+  text-align: center;
+  max-width: 85%;
+  margin-bottom: 2rem;
+  background: rgba(5, 7, 10, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 16px;
+  padding: 1rem 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: opacity 0.5s ease;
+}
+
+.story-text {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  line-height: 1.5;
+  color: var(--text-main);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+}
+
+/* --- Bottom Bar Controls --- */
+.bottom-bar {
+  pointer-events: auto;
+  display: flex;
+  justify-content: center;
   gap: 1rem;
   width: 100%;
-  justify-content: center;
+  max-width: 400px;
+  margin: 0 auto;
 }
 
+/* --- Buttons --- */
 button {
   cursor: pointer;
   font-family: var(--font-sans);
   font-size: 0.95rem;
-  font-weight: 500;
-  border-radius: 30px;
-  padding: 0.75rem 1.5rem;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  outline: none;
-}
-
-/* Primary Cinematic Button */
-.btn-cinematic {
-  background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%);
-  color: #000;
-  border: none;
   font-weight: 600;
-  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
-  flex: 2;
+  border: none;
+  border-radius: 30px;
+  padding: 0.9rem 2rem;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  outline: none;
+  width: 100%;
 }
 
-.btn-cinematic:hover {
-  background: linear-gradient(135deg, #f3e5ab 0%, #d4af37 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.6);
+.btn-primary {
+  background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%);
+  color: #05070a;
+  box-shadow: 0 4px 20px var(--primary-glow);
 }
 
-.btn-cinematic:active {
-  transform: translateY(0);
+.btn-primary:active {
+  transform: scale(0.97);
 }
 
-/* Secondary Button */
+.btn-glow {
+  animation: buttonGlow 2s infinite alternate;
+}
+
+@keyframes buttonGlow {
+  0% { box-shadow: 0 4px 15px var(--primary-glow); }
+  100% { box-shadow: 0 6px 28px rgba(212, 175, 55, 0.75); }
+}
+
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--text-light);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  flex: 1;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(8px);
 }
 
-.btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.18);
-  border-color: rgba(255, 255, 255, 0.4);
+.btn-secondary:active {
+  background: rgba(255, 255, 255, 0.2);
 }
 
-/* --- Responsive Adaptations --- */
-@media (max-width: 768px) {
-  .overlay-container {
-    padding: 1rem;
+/* --- Final Scene Card Styling --- */
+.final-title {
+  font-family: var(--font-serif);
+  font-size: 1.8rem;
+  color: var(--primary-gold);
+  margin-bottom: 1rem;
+}
+
+.final-text {
+  font-size: 1rem;
+  color: var(--text-sub);
+  line-height: 1.7;
+  font-style: italic;
+  margin-bottom: 2rem;
+}
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 480px) {
+  .overlay-scene {
+    padding: 1.5rem 1rem;
   }
 
-  .title {
-    font-size: 2rem;
+  .hero-card {
+    padding: 2rem 1.5rem;
+    border-radius: 20px;
+  }
+
+  .main-title {
+    font-size: 1.6rem;
     letter-spacing: 2px;
   }
 
-  .subtitle {
+  .subtitle-text {
     font-size: 0.95rem;
   }
 
-  .info-card {
-    padding: 1.2rem 1.5rem;
-    width: 95%;
-    margin-bottom: 0.8rem;
+  .story-text {
+    font-size: 0.95rem;
   }
 
-  .distance-number {
-    font-size: 1.4rem;
-  }
-
-  .controls {
-    flex-direction: column;
-    gap: 0.6rem;
-  }
-
-  .btn-cinematic, .btn-secondary {
-    width: 100%;
-  }
-}
-
-@media (max-width: 480px) {
-  .title {
-    font-size: 1.6rem;
-  }
-  
-  .info-card {
-    border-radius: 16px;
+  button {
+    padding: 0.85rem 1.5rem;
+    font-size: 0.9rem;
   }
 }

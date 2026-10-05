@@ -27,11 +27,13 @@ document.addEventListener("DOMContentLoaded", () => {
        ===================================================== */
 
     const egypt = {
+        name: "EGIPTO",
         lat: 26.8206,
         lng: 30.8025
     };
 
     const honduras = {
+        name: "HONDURAS",
         lat: 14.0723,
         lng: -86.2419
     };
@@ -41,7 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
        DISTANCE
        ===================================================== */
 
-    function calculateDistance(
+    function haversine(
         lat1,
         lon1,
         lat2,
@@ -50,23 +52,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const R = 6371;
 
-        const dLat =
+        const p1 =
+            lat1 * Math.PI / 180;
+
+        const p2 =
+            lat2 * Math.PI / 180;
+
+        const dp =
             (lat2 - lat1) *
             Math.PI / 180;
 
-        const dLon =
+        const dl =
             (lon2 - lon1) *
             Math.PI / 180;
 
         const a =
-            Math.sin(dLat / 2) ** 2 +
-            Math.cos(
-                lat1 * Math.PI / 180
-            ) *
-            Math.cos(
-                lat2 * Math.PI / 180
-            ) *
-            Math.sin(dLon / 2) ** 2;
+            Math.sin(dp / 2) ** 2 +
+            Math.cos(p1) *
+            Math.cos(p2) *
+            Math.sin(dl / 2) ** 2;
 
         const c =
             2 *
@@ -79,8 +83,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    const totalDistance =
-        calculateDistance(
+    const distance =
+        haversine(
             egypt.lat,
             egypt.lng,
             honduras.lat,
@@ -91,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (distanceElement) {
 
         distanceElement.textContent =
-            Math.round(totalDistance)
+            Math.round(distance)
                 .toLocaleString("es-ES") +
             " km";
     }
@@ -110,11 +114,6 @@ document.addEventListener("DOMContentLoaded", () => {
         document.createElement("canvas");
 
 
-    canvas.style.width = "100%";
-    canvas.style.height = "100%";
-    canvas.style.display = "block";
-
-
     earthContainer.innerHTML = "";
 
 
@@ -128,25 +127,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     if (!ctx) {
-
-        if (earthLoading) {
-
-            earthLoading.innerHTML =
-                "<span>No se pudo iniciar el mundo 3D.</span>";
-        }
-
         return;
     }
 
 
-    /* =====================================================
-       CANVAS SIZE
-       ===================================================== */
-
     let width = 0;
     let height = 0;
-
-    let pixelRatio = 1;
+    let dpr = 1;
 
 
     function resize() {
@@ -158,7 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
             earthContainer.clientHeight;
 
 
-        pixelRatio =
+        dpr =
             Math.min(
                 window.devicePixelRatio || 1,
                 2
@@ -166,10 +153,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
         canvas.width =
-            width * pixelRatio;
+            width * dpr;
 
         canvas.height =
-            height * pixelRatio;
+            height * dpr;
 
 
         canvas.style.width =
@@ -180,10 +167,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
         ctx.setTransform(
-            pixelRatio,
+            dpr,
             0,
             0,
-            pixelRatio,
+            dpr,
             0,
             0
         );
@@ -203,9 +190,18 @@ document.addEventListener("DOMContentLoaded", () => {
        EARTH STATE
        ===================================================== */
 
-    let rotation = -0.55;
+    let rotation =
+        -0.55;
 
-    let targetRotation = -0.55;
+    let targetRotation =
+        -0.55;
+
+    let verticalRotation =
+        -0.12;
+
+    let targetVerticalRotation =
+        -0.12;
+
 
     let zoom = 1;
 
@@ -215,17 +211,181 @@ document.addEventListener("DOMContentLoaded", () => {
     let dragging = false;
 
     let lastX = 0;
+    let lastY = 0;
 
-
-    let routeProgress = 0;
 
     let routeStarted = false;
+
+    let routeProgress = 0;
 
     let routeFinished = false;
 
 
+    let cameraFocus = 0;
+
+
     /* =====================================================
-       PROJECT LAT/LNG TO GLOBE
+       STARS
+       ===================================================== */
+
+    const stars = [];
+
+
+    for (
+        let i = 0;
+        i < 420;
+        i++
+    ) {
+
+        stars.push({
+
+            x:
+                Math.random(),
+
+            y:
+                Math.random(),
+
+            size:
+                Math.random() *
+                1.5 +
+                0.2,
+
+            alpha:
+                Math.random() *
+                0.7 +
+                0.15,
+
+            twinkle:
+                Math.random() *
+                0.03
+        });
+    }
+
+
+    /* =====================================================
+       CLOUDS
+       ===================================================== */
+
+    const clouds = [];
+
+
+    for (
+        let i = 0;
+        i < 85;
+        i++
+    ) {
+
+        clouds.push({
+
+            lat:
+                -70 +
+                Math.random() * 140,
+
+            lng:
+                -180 +
+                Math.random() * 360,
+
+            size:
+                0.012 +
+                Math.random() * 0.035,
+
+            speed:
+                0.0002 +
+                Math.random() * 0.0005,
+
+            phase:
+                Math.random() * Math.PI * 2
+        });
+    }
+
+
+    /* =====================================================
+       ROUTE
+       ===================================================== */
+
+    function createRoute() {
+
+        const points = [];
+
+
+        for (
+            let i = 0;
+            i <= 180;
+            i++
+        ) {
+
+            const t =
+                i / 180;
+
+
+            const lat =
+                egypt.lat +
+                (
+                    honduras.lat -
+                    egypt.lat
+                ) *
+                t;
+
+
+            let longitudeDifference =
+                honduras.lng -
+                egypt.lng;
+
+
+            if (
+                longitudeDifference >
+                180
+            ) {
+
+                longitudeDifference -=
+                    360;
+            }
+
+
+            if (
+                longitudeDifference <
+                -180
+            ) {
+
+                longitudeDifference +=
+                    360;
+            }
+
+
+            const lng =
+                egypt.lng +
+                longitudeDifference *
+                t;
+
+
+            const curve =
+                Math.sin(
+                    t * Math.PI
+                ) *
+                18;
+
+
+            points.push({
+
+                lat:
+                    lat + curve,
+
+                lng:
+                    lng
+            });
+        }
+
+
+        return points;
+    }
+
+
+    const routePoints =
+        createRoute();
+
+
+    /* =====================================================
+       PROJECT LAT/LNG
        ===================================================== */
 
     function project(
@@ -240,210 +400,49 @@ document.addEventListener("DOMContentLoaded", () => {
             180;
 
 
-        const relativeLng =
-            (
-                lng *
-                Math.PI /
-                180
-            ) +
+        const lngRad =
+            lng *
+            Math.PI /
+            180 +
             rotation;
+
+
+        const vertical =
+            Math.cos(
+                verticalRotation
+            );
 
 
         const x =
             Math.cos(latRad) *
-            Math.sin(relativeLng);
+            Math.sin(lngRad);
 
 
         const y =
-            Math.sin(latRad);
+            Math.sin(latRad) *
+            vertical;
 
 
         const z =
             Math.cos(latRad) *
-            Math.cos(relativeLng);
+            Math.cos(lngRad);
 
 
         return {
-            x: x * radius,
-            y: y * radius,
-            z: z
+
+            x:
+                x * radius,
+
+            y:
+                y * radius,
+
+            z
         };
     }
 
 
     /* =====================================================
-       GREAT CIRCLE
-       ===================================================== */
-
-    function createRoutePoints() {
-
-        const points = [];
-
-        const lat1 =
-            egypt.lat *
-            Math.PI /
-            180;
-
-        const lon1 =
-            egypt.lng *
-            Math.PI /
-            180;
-
-        const lat2 =
-            honduras.lat *
-            Math.PI /
-            180;
-
-        const lon2 =
-            honduras.lng *
-            Math.PI /
-            180;
-
-
-        function vector(
-            lat,
-            lon
-        ) {
-
-            return {
-
-                x:
-                    Math.cos(lat) *
-                    Math.cos(lon),
-
-                y:
-                    Math.sin(lat),
-
-                z:
-                    Math.cos(lat) *
-                    Math.sin(lon)
-            };
-        }
-
-
-        const a =
-            vector(
-                lat1,
-                lon1
-            );
-
-
-        const b =
-            vector(
-                lat2,
-                lon2
-            );
-
-
-        const dot =
-            Math.max(
-                -1,
-                Math.min(
-                    1,
-                    a.x * b.x +
-                    a.y * b.y +
-                    a.z * b.z
-                )
-            );
-
-
-        const angle =
-            Math.acos(dot);
-
-
-        for (
-            let i = 0;
-            i <= 160;
-            i++
-        ) {
-
-            const t =
-                i / 160;
-
-
-            const sinAngle =
-                Math.sin(angle);
-
-
-            const A =
-                Math.sin(
-                    (1 - t) *
-                    angle
-                ) /
-                sinAngle;
-
-
-            const B =
-                Math.sin(
-                    t *
-                    angle
-                ) /
-                sinAngle;
-
-
-            let x =
-                A * a.x +
-                B * b.x;
-
-
-            let y =
-                A * a.y +
-                B * b.y;
-
-
-            let z =
-                A * a.z +
-                B * b.z;
-
-
-            const length =
-                Math.sqrt(
-                    x * x +
-                    y * y +
-                    z * z
-                );
-
-
-            x /= length;
-            y /= length;
-            z /= length;
-
-
-            const lat =
-                Math.asin(y);
-
-
-            const lon =
-                Math.atan2(
-                    z,
-                    x
-                );
-
-
-            points.push({
-                lat:
-                    lat *
-                    180 /
-                    Math.PI,
-
-                lng:
-                    lon *
-                    180 /
-                    Math.PI
-            });
-        }
-
-
-        return points;
-    }
-
-
-    const routePoints =
-        createRoutePoints();
-
-
-    /* =====================================================
-       DRAW BACKGROUND
+       BACKGROUND
        ===================================================== */
 
     function drawBackground() {
@@ -455,19 +454,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 0,
                 width / 2,
                 height / 2,
-                Math.max(width, height)
+                Math.max(
+                    width,
+                    height
+                )
             );
 
 
         gradient.addColorStop(
             0,
-            "#071426"
+            "#081a31"
         );
 
 
         gradient.addColorStop(
-            0.5,
-            "#020712"
+            0.45,
+            "#020914"
         );
 
 
@@ -494,48 +496,26 @@ document.addEventListener("DOMContentLoaded", () => {
        STARS
        ===================================================== */
 
-    const stars = [];
-
-
-    for (
-        let i = 0;
-        i < 180;
-        i++
-    ) {
-
-        stars.push({
-
-            x:
-                Math.random() *
-                width,
-
-            y:
-                Math.random() *
-                height,
-
-            size:
-                Math.random() *
-                1.5 +
-                0.3,
-
-            opacity:
-                Math.random() *
-                0.6 +
-                0.2
-        });
-    }
-
-
-    function drawStars() {
+    function drawStars(time) {
 
         stars.forEach(
             star => {
 
+                const alpha =
+                    star.alpha +
+                    Math.sin(
+                        time *
+                        star.twinkle
+                    ) *
+                    0.12;
+
+
                 ctx.beginPath();
 
+
                 ctx.arc(
-                    star.x,
-                    star.y,
+                    star.x * width,
+                    star.y * height,
                     star.size,
                     0,
                     Math.PI * 2
@@ -543,7 +523,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
                 ctx.fillStyle =
-                    `rgba(255,255,255,${star.opacity})`;
+                    `rgba(255,255,255,${Math.max(
+                        0.05,
+                        alpha
+                    )})`;
 
 
                 ctx.fill();
@@ -553,58 +536,47 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =====================================================
-       DRAW EARTH
+       EARTH ATMOSPHERE
        ===================================================== */
 
-    function drawEarth() {
+    function drawAtmosphere(
+        cx,
+        cy,
+        radius
+    ) {
 
-        const radius =
-            Math.min(
-                width,
-                height
-            ) *
-            0.36 *
-            zoom;
-
-
-        const centerX =
-            width / 2;
-
-
-        const centerY =
-            height / 2;
-
-
-        /* =========================
-           ATMOSPHERE
-           ========================= */
-
-        const atmosphere =
+        const glow =
             ctx.createRadialGradient(
-                centerX,
-                centerY,
-                radius * 0.85,
-                centerX,
-                centerY,
+                cx,
+                cy,
+                radius * 0.82,
+                cx,
+                cy,
                 radius * 1.25
             );
 
 
-        atmosphere.addColorStop(
+        glow.addColorStop(
             0,
-            "rgba(30,100,190,0)"
+            "rgba(0,0,0,0)"
         );
 
 
-        atmosphere.addColorStop(
+        glow.addColorStop(
             0.75,
-            "rgba(70,160,255,0.16)"
+            "rgba(60,160,255,0.18)"
         );
 
 
-        atmosphere.addColorStop(
+        glow.addColorStop(
+            0.9,
+            "rgba(60,150,255,0.08)"
+        );
+
+
+        glow.addColorStop(
             1,
-            "rgba(60,140,255,0)"
+            "rgba(60,150,255,0)"
         );
 
 
@@ -612,124 +584,162 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
         ctx.arc(
-            centerX,
-            centerY,
-            radius * 1.18,
+            cx,
+            cy,
+            radius * 1.22,
             0,
             Math.PI * 2
         );
 
 
         ctx.fillStyle =
-            atmosphere;
+            glow;
 
 
         ctx.fill();
-
-
-        /* =========================
-           EARTH
-           ========================= */
-
-        const earthGradient =
-            ctx.createRadialGradient(
-                centerX -
-                radius * 0.35,
-                centerY -
-                radius * 0.35,
-                radius * 0.1,
-
-                centerX,
-                centerY,
-                radius
-            );
-
-
-        earthGradient.addColorStop(
-            0,
-            "#58a9d8"
-        );
-
-
-        earthGradient.addColorStop(
-            0.35,
-            "#176aa3"
-        );
-
-
-        earthGradient.addColorStop(
-            0.72,
-            "#073c68"
-        );
-
-
-        earthGradient.addColorStop(
-            1,
-            "#020d1c"
-        );
-
-
-        ctx.beginPath();
-
-
-        ctx.arc(
-            centerX,
-            centerY,
-            radius,
-            0,
-            Math.PI * 2
-        );
-
-
-        ctx.fillStyle =
-            earthGradient;
-
-
-        ctx.fill();
-
-
-        /* =========================
-           CONTINENTS — STYLIZED
-           ========================= */
-
-        drawContinents(
-            centerX,
-            centerY,
-            radius
-        );
-
-
-        /* =========================
-           EARTH EDGE
-           ========================= */
-
-        ctx.beginPath();
-
-
-        ctx.arc(
-            centerX,
-            centerY,
-            radius,
-            0,
-            Math.PI * 2
-        );
-
-
-        ctx.strokeStyle =
-            "rgba(100,190,255,0.45)";
-
-
-        ctx.lineWidth =
-            1.5;
-
-
-        ctx.stroke();
     }
 
 
     /* =====================================================
-       STYLIZED CONTINENTS
+       EARTH BASE
        ===================================================== */
+
+    function drawEarthBase(
+        cx,
+        cy,
+        radius
+    ) {
+
+        const earth =
+            ctx.createRadialGradient(
+
+                cx -
+                radius * 0.35,
+
+                cy -
+                radius * 0.4,
+
+                radius * 0.05,
+
+                cx,
+                cy,
+                radius
+            );
+
+
+        earth.addColorStop(
+            0,
+            "#65b5dc"
+        );
+
+
+        earth.addColorStop(
+            0.25,
+            "#1d78aa"
+        );
+
+
+        earth.addColorStop(
+            0.6,
+            "#07507d"
+        );
+
+
+        earth.addColorStop(
+            0.85,
+            "#032e52"
+        );
+
+
+        earth.addColorStop(
+            1,
+            "#011323"
+        );
+
+
+        ctx.beginPath();
+
+
+        ctx.arc(
+            cx,
+            cy,
+            radius,
+            0,
+            Math.PI * 2
+        );
+
+
+        ctx.fillStyle =
+            earth;
+
+
+        ctx.fill();
+    }
+
+
+    /* =====================================================
+       CONTINENT SHAPES
+       ===================================================== */
+
+    const continentShapes = [
+
+        [
+            [-170, 65],
+            [-130, 70],
+            [-110, 55],
+            [-100, 40],
+            [-120, 25],
+            [-105, 10],
+            [-120, 5],
+            [-145, 25],
+            [-160, 45]
+        ],
+
+        [
+            [-80, 10],
+            [-60, 15],
+            [-45, 5],
+            [-50, -15],
+            [-60, -35],
+            [-72, -55],
+            [-80, -30]
+        ],
+
+        [
+            [-15, 37],
+            [0, 48],
+            [25, 60],
+            [55, 55],
+            [80, 45],
+            [110, 30],
+            [125, 10],
+            [100, 0],
+            [70, 5],
+            [40, 0],
+            [20, 10],
+            [5, 20]
+        ],
+
+        [
+            [15, 5],
+            [35, 10],
+            [48, -10],
+            [40, -30],
+            [25, -50],
+            [5, -35],
+            [-5, -10]
+        ],
+
+        [
+            [115, 0],
+            [140, -10],
+            [155, -30],
+            [145, -45],
+            [120, -35],
+            [110, -15]
+        ]
+    ];
+
 
     function drawContinents(
         cx,
@@ -737,133 +747,96 @@ document.addEventListener("DOMContentLoaded", () => {
         radius
     ) {
 
-        const continents = [
-
-            [
-                [-20, 40],
-                [5, 45],
-                [20, 30],
-                [15, 10],
-                [0, -5],
-                [-15, 5],
-                [-25, 25]
-            ],
-
-            [
-                [-75, 25],
-                [-55, 35],
-                [-40, 20],
-                [-48, -5],
-                [-60, -25],
-                [-70, -45],
-                [-80, -20]
-            ],
-
-            [
-                [20, 55],
-                [40, 45],
-                [55, 30],
-                [48, 10],
-                [35, 0],
-                [20, 10]
-            ],
-
-            [
-                [5, -5],
-                [25, -10],
-                [40, -25],
-                [35, -45],
-                [15, -55],
-                [0, -35]
-            ],
-
-            [
-                [80, 40],
-                [110, 45],
-                [140, 30],
-                [150, 10],
-                [130, 0],
-                [100, 15]
-            ]
-        ];
-
-
-        continents.forEach(
-            continent => {
+        continentShapes.forEach(
+            shape => {
 
                 ctx.beginPath();
 
-
-                continent.forEach(
-                    (point, index) => {
-
-                        const lat =
-                            point[1] *
-                            Math.PI /
-                            180;
+                let started =
+                    false;
 
 
-                        const lon =
-                            point[0] *
-                            Math.PI /
-                            180 +
-                            rotation;
+                shape.forEach(
+                    point => {
+
+                        const p =
+                            project(
+                                point[1],
+                                point[0],
+                                radius
+                            );
 
 
-                        const x =
-                            Math.cos(lat) *
-                            Math.sin(lon);
-
-
-                        const y =
-                            Math.sin(lat);
-
-
-                        const z =
-                            Math.cos(lat) *
-                            Math.cos(lon);
-
-
-                        if (z <= 0) {
+                        if (p.z < 0) {
                             return;
                         }
 
 
-                        const screenX =
-                            cx +
-                            x *
-                            radius;
+                        const x =
+                            cx + p.x;
 
 
-                        const screenY =
-                            cy -
-                            y *
-                            radius;
+                        const y =
+                            cy - p.y;
 
 
-                        if (index === 0) {
+                        if (!started) {
 
                             ctx.moveTo(
-                                screenX,
-                                screenY
+                                x,
+                                y
                             );
+
+                            started = true;
 
                         } else {
 
                             ctx.lineTo(
-                                screenX,
-                                screenY
+                                x,
+                                y
                             );
                         }
                     }
                 );
 
 
+                if (!started) {
+                    return;
+                }
+
+
                 ctx.closePath();
 
 
+                const land =
+                    ctx.createLinearGradient(
+                        cx - radius,
+                        cy - radius,
+                        cx + radius,
+                        cy + radius
+                    );
+
+
+                land.addColorStop(
+                    0,
+                    "rgba(104,174,105,0.95)"
+                );
+
+
+                land.addColorStop(
+                    0.5,
+                    "rgba(52,128,72,0.88)"
+                );
+
+
+                land.addColorStop(
+                    1,
+                    "rgba(25,83,48,0.8)"
+                );
+
+
                 ctx.fillStyle =
-                    "rgba(75,150,85,0.7)";
+                    land;
 
 
                 ctx.fill();
@@ -873,7 +846,165 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =====================================================
-       DRAW COUNTRY MARKER
+       CLOUDS
+       ===================================================== */
+
+    function drawClouds(
+        cx,
+        cy,
+        radius,
+        time
+    ) {
+
+        clouds.forEach(
+            cloud => {
+
+                const longitude =
+                    cloud.lng +
+                    time *
+                    cloud.speed;
+
+
+                const p =
+                    project(
+                        cloud.lat,
+                        longitude,
+                        radius *
+                        1.012
+                    );
+
+
+                if (p.z < 0.08) {
+                    return;
+                }
+
+
+                const x =
+                    cx + p.x;
+
+
+                const y =
+                    cy - p.y;
+
+
+                const size =
+                    radius *
+                    cloud.size;
+
+
+                ctx.beginPath();
+
+
+                ctx.ellipse(
+                    x,
+                    y,
+                    size * 1.8,
+                    size,
+                    0,
+                    0,
+                    Math.PI * 2
+                );
+
+
+                ctx.fillStyle =
+                    "rgba(255,255,255,0.08)";
+
+
+                ctx.fill();
+            }
+        );
+    }
+
+
+    /* =====================================================
+       NIGHT LIGHTS
+       ===================================================== */
+
+    function drawNightLights(
+        cx,
+        cy,
+        radius
+    ) {
+
+        const cities = [
+
+            [30, 31],
+            [31, 30],
+            [40, 29],
+            [51, 25],
+            [29, 41],
+            [77, 28],
+            [139, 35],
+            [116, 40],
+            [-74, 40],
+            [-118, 34],
+            [-99, 19],
+            [-84, 10],
+            [-78, 15]
+        ];
+
+
+        cities.forEach(
+            city => {
+
+                const p =
+                    project(
+                        city[1],
+                        city[0],
+                        radius *
+                        1.002
+                    );
+
+
+                if (p.z < 0.25) {
+                    return;
+                }
+
+
+                const x =
+                    cx + p.x;
+
+
+                const y =
+                    cy - p.y;
+
+
+                ctx.beginPath();
+
+
+                ctx.arc(
+                    x,
+                    y,
+                    1.5,
+                    0,
+                    Math.PI * 2
+                );
+
+
+                ctx.fillStyle =
+                    "rgba(255,190,70,0.75)";
+
+
+                ctx.shadowBlur =
+                    5;
+
+
+                ctx.shadowColor =
+                    "rgba(255,160,40,0.8)";
+
+
+                ctx.fill();
+
+
+                ctx.shadowBlur =
+                    0;
+            }
+        );
+    }
+
+
+    /* =====================================================
+       MARKER
        ===================================================== */
 
     function drawMarker(
@@ -888,11 +1019,11 @@ document.addEventListener("DOMContentLoaded", () => {
             project(
                 location.lat,
                 location.lng,
-                radius
+                radius * 1.025
             );
 
 
-        if (p.z <= 0) {
+        if (p.z < 0) {
             return;
         }
 
@@ -906,12 +1037,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
         const pulse =
-            4 +
+            5 +
             Math.sin(
                 performance.now() *
-                0.004
+                0.005
             ) *
-            1.5;
+            2;
 
 
         ctx.beginPath();
@@ -921,6 +1052,25 @@ document.addEventListener("DOMContentLoaded", () => {
             x,
             y,
             pulse,
+            0,
+            Math.PI * 2
+        );
+
+
+        ctx.fillStyle =
+            "rgba(255,255,255,0.18)";
+
+
+        ctx.fill();
+
+
+        ctx.beginPath();
+
+
+        ctx.arc(
+            x,
+            y,
+            3,
             0,
             Math.PI * 2
         );
@@ -946,15 +1096,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
         ctx.font =
-            "600 11px Arial";
-
-
-        ctx.fillStyle =
-            "rgba(255,255,255,0.9)";
+            "600 10px Arial";
 
 
         ctx.textAlign =
             "center";
+
+
+        ctx.fillStyle =
+            "rgba(255,255,255,0.9)";
 
 
         ctx.fillText(
@@ -966,7 +1116,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =====================================================
-       DRAW ROUTE
+       ROUTE
        ===================================================== */
 
     function drawRoute(
@@ -993,6 +1143,10 @@ document.addEventListener("DOMContentLoaded", () => {
         ctx.beginPath();
 
 
+        let started =
+            false;
+
+
         for (
             let i = 0;
             i < count;
@@ -1007,11 +1161,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 project(
                     point.lat,
                     point.lng,
-                    radius * 1.01
+                    radius * 1.035
                 );
 
 
-            if (p.z <= 0) {
+            if (p.z < 0) {
                 continue;
             }
 
@@ -1024,12 +1178,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 cy - p.y;
 
 
-            if (i === 0) {
+            if (!started) {
 
                 ctx.moveTo(
                     x,
                     y
                 );
+
+                started = true;
 
             } else {
 
@@ -1041,20 +1197,40 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
 
+        if (!started) {
+            return;
+        }
+
+
+        ctx.lineWidth =
+            5;
+
+
         ctx.strokeStyle =
-            "#ffffff";
+            "rgba(70,170,255,0.2)";
+
+
+        ctx.shadowBlur =
+            18;
+
+
+        ctx.shadowColor =
+            "rgba(70,170,255,0.8)";
+
+
+        ctx.stroke();
 
 
         ctx.lineWidth =
             2;
 
 
-        ctx.shadowBlur =
-            10;
-
-
-        ctx.shadowColor =
+        ctx.strokeStyle =
             "#ffffff";
+
+
+        ctx.shadowBlur =
+            8;
 
 
         ctx.stroke();
@@ -1062,82 +1238,83 @@ document.addEventListener("DOMContentLoaded", () => {
 
         ctx.shadowBlur =
             0;
-
-
-        if (
-            count <
-            routePoints.length
-        ) {
-
-            const point =
-                routePoints[
-                    count - 1
-                ];
-
-
-            const p =
-                project(
-                    point.lat,
-                    point.lng,
-                    radius * 1.02
-                );
-
-
-            if (p.z > 0) {
-
-                const x =
-                    cx + p.x;
-
-
-                const y =
-                    cy - p.y;
-
-
-                ctx.beginPath();
-
-
-                ctx.arc(
-                    x,
-                    y,
-                    6,
-                    0,
-                    Math.PI * 2
-                );
-
-
-                ctx.fillStyle =
-                    "#ffffff";
-
-
-                ctx.fill();
-            }
-        }
     }
 
 
     /* =====================================================
-       MAIN DRAW
+       EARTH EDGE
        ===================================================== */
 
-    function draw() {
+    function drawEarthEdge(
+        cx,
+        cy,
+        radius
+    ) {
 
-        drawBackground();
+        ctx.beginPath();
 
-        drawStars();
+
+        ctx.arc(
+            cx,
+            cy,
+            radius,
+            0,
+            Math.PI * 2
+        );
+
+
+        ctx.strokeStyle =
+            "rgba(110,200,255,0.45)";
+
+
+        ctx.lineWidth =
+            1.5;
+
+
+        ctx.stroke();
+    }
+
+
+    /* =====================================================
+       MAIN RENDER
+       ===================================================== */
+
+    function render(
+        time
+    ) {
+
+        drawBackground(
+            time
+        );
+
+
+        drawStars(
+            time
+        );
 
 
         rotation +=
             (
                 targetRotation -
                 rotation
-            ) * 0.08;
+            ) *
+            0.06;
+
+
+        verticalRotation +=
+            (
+                targetVerticalRotation -
+                verticalRotation
+            ) *
+            0.06;
 
 
         zoom +=
             (
                 targetZoom -
                 zoom
-            ) * 0.08;
+            ) *
+            0.06;
 
 
         const radius =
@@ -1145,7 +1322,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 width,
                 height
             ) *
-            0.36 *
+            0.37 *
             zoom;
 
 
@@ -1154,10 +1331,44 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
         const cy =
-            height / 2;
+            height / 2 -
+            15;
 
 
-        drawEarth();
+        drawAtmosphere(
+            cx,
+            cy,
+            radius
+        );
+
+
+        drawEarthBase(
+            cx,
+            cy,
+            radius
+        );
+
+
+        drawContinents(
+            cx,
+            cy,
+            radius
+        );
+
+
+        drawNightLights(
+            cx,
+            cy,
+            radius
+        );
+
+
+        drawClouds(
+            cx,
+            cy,
+            radius,
+            time
+        );
 
 
         drawRoute(
@@ -1172,7 +1383,7 @@ document.addEventListener("DOMContentLoaded", () => {
             radius,
             cx,
             cy,
-            "EGIPTO"
+            egypt.name
         );
 
 
@@ -1181,21 +1392,30 @@ document.addEventListener("DOMContentLoaded", () => {
             radius,
             cx,
             cy,
-            "HONDURAS"
+            honduras.name
+        );
+
+
+        drawEarthEdge(
+            cx,
+            cy,
+            radius
         );
 
 
         requestAnimationFrame(
-            draw
+            render
         );
     }
 
 
-    draw();
+    requestAnimationFrame(
+        render
+    );
 
 
     /* =====================================================
-       HIDE LOADING
+       LOADING
        ===================================================== */
 
     setTimeout(
@@ -1209,7 +1429,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
         },
-        700
+        900
     );
 
 
@@ -1221,10 +1441,16 @@ document.addEventListener("DOMContentLoaded", () => {
         "pointerdown",
         event => {
 
-            dragging = true;
+            dragging =
+                true;
+
 
             lastX =
                 event.clientX;
+
+
+            lastY =
+                event.clientY;
         }
     );
 
@@ -1238,18 +1464,42 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
 
-            const delta =
+            const dx =
                 event.clientX -
                 lastX;
+
+
+            const dy =
+                event.clientY -
+                lastY;
 
 
             lastX =
                 event.clientX;
 
 
+            lastY =
+                event.clientY;
+
+
             targetRotation +=
-                delta *
-                0.008;
+                dx *
+                0.007;
+
+
+            targetVerticalRotation +=
+                dy *
+                0.004;
+
+
+            targetVerticalRotation =
+                Math.max(
+                    -0.65,
+                    Math.min(
+                        0.65,
+                        targetVerticalRotation
+                    )
+                );
         }
     );
 
@@ -1258,7 +1508,8 @@ document.addEventListener("DOMContentLoaded", () => {
         "pointerup",
         () => {
 
-            dragging = false;
+            dragging =
+                false;
         }
     );
 
@@ -1267,13 +1518,24 @@ document.addEventListener("DOMContentLoaded", () => {
         "pointercancel",
         () => {
 
-            dragging = false;
+            dragging =
+                false;
+        }
+    );
+
+
+    earthContainer.addEventListener(
+        "pointerleave",
+        () => {
+
+            dragging =
+                false;
         }
     );
 
 
     /* =====================================================
-       ZOOM
+       WHEEL ZOOM
        ===================================================== */
 
     earthContainer.addEventListener(
@@ -1287,9 +1549,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
             targetZoom =
                 Math.max(
-                    0.7,
+                    0.75,
                     Math.min(
-                        1.5,
+                        1.35,
                         targetZoom
                     )
                 );
@@ -1301,7 +1563,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =====================================================
-       ROUTE BUTTON
+       TRAVEL
        ===================================================== */
 
     if (travelButton) {
@@ -1334,12 +1596,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
 
-                const startTime =
+                const start =
                     performance.now();
 
 
                 const duration =
-                    8000;
+                    8500;
 
 
                 function animateRoute(
@@ -1350,7 +1612,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         Math.min(
                             (
                                 time -
-                                startTime
+                                start
                             ) /
                             duration,
                             1
@@ -1361,13 +1623,15 @@ document.addEventListener("DOMContentLoaded", () => {
                         progress;
 
 
-                    if (progress < 0.35) {
+                    if (
+                        progress < 0.3
+                    ) {
 
                         storyText.textContent =
                             "Un camino comienza a cruzar el mundo...";
 
                     } else if (
-                        progress < 0.75
+                        progress < 0.7
                     ) {
 
                         storyText.textContent =
@@ -1380,7 +1644,17 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
 
 
-                    if (progress < 1) {
+                    /* Camera effect */
+
+                    targetZoom =
+                        1 +
+                        progress *
+                        0.15;
+
+
+                    if (
+                        progress < 1
+                    ) {
 
                         requestAnimationFrame(
                             animateRoute
@@ -1411,16 +1685,19 @@ document.addEventListener("DOMContentLoaded", () => {
             true;
 
 
+        if (storyText) {
+
+            storyText.textContent =
+                "Finalmente... el camino llega hasta Honduras.";
+        }
+
+
         travelButton.disabled =
             false;
 
 
         travelButton.textContent =
             "Continuar";
-
-
-        storyText.textContent =
-            "Finalmente... el camino llega hasta Honduras.";
 
 
         travelButton.onclick =
